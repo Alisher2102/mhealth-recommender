@@ -19,7 +19,7 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 | 1 | Select & shortlist 15–20 mHealth apps (18 selected) | No | 🟡 In progress |
 | 2 | Score each app with MARS | No | ⬜ Not started |
 | 3 | Design architecture & DB schema | Light | ✅ **Done** |
-| 4 | Build admin module (MARS input + storage) | Yes | ⬜ Not started |
+| 4 | Build admin module (MARS input + storage) | Yes | 🟡 In progress (backend skeleton done) |
 | 5 | Build user survey module (consent + SUS + storage) | Yes | ⬜ Not started |
 | 6 | Build weighted ranking algorithm | Yes | ⬜ Not started |
 | 7 | Build recommendation engine (condition matching) | Yes | ⬜ Not started |
@@ -29,7 +29,8 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 
 **Legend:** ✅ Done · 🟡 In progress · ⬜ Not started
 
-**👉 Currently working on:** Phase 4 — about to scaffold the backend skeleton (`server/`).
+**👉 Currently working on:** Phase 4 — backend skeleton scaffolded (`server/` with a `/health`
+endpoint). Next: verify it runs locally, then add the database (Prisma) and the first real routes.
 
 ---
 
@@ -57,12 +58,42 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 
 ## 🚀 Getting started (local)
 
-> Nothing to run yet — the backend is scaffolded in Phase 4. This section will grow as we build.
+**Prerequisites:** **Node.js (LTS, v20+)**, **Git**, and an editor (e.g. **VS Code**). No database
+install is required for local development — we use SQLite (a local file), added in a later step.
 
+**1. Clone the repo**
 ```bash
 git clone https://github.com/Alisher2102/mhealth-recommender.git
 cd mhealth-recommender
 ```
 
-You'll need **Node.js (LTS)**, **Git**, and an editor (e.g. **VS Code**). No database install is
-required for local development — we use SQLite (a local file).
+**2. Run the backend API**
+```bash
+cd server
+cp .env.example .env      # create your local env file (Windows: copy .env.example .env)
+npm install               # install dependencies
+npm run dev               # start the dev server (auto-reloads on changes)
+```
+
+You should see:
+```
+🚀 mHealth Recommender API listening on http://localhost:4000
+   Health check: http://localhost:4000/health
+```
+
+**3. Confirm it works** — open <http://localhost:4000/health> in your browser (or run
+`curl http://localhost:4000/health`). You should get:
+```json
+{ "status": "ok", "service": "mhealth-recommender-server", "timestamp": "..." }
+```
+
+Stop the server anytime with `Ctrl+C`.
+
+### Backend scripts (`server/`)
+
+| Command | What it does |
+|---------|--------------|
+| `npm run dev` | Start dev server with auto-reload (tsx watch) |
+| `npm run build` | Compile TypeScript to `dist/` |
+| `npm start` | Run the compiled server from `dist/` |
+| `npm run typecheck` | Type-check without emitting files |

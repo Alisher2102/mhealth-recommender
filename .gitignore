@@ -21,6 +21,10 @@ out/
 *.sqlite3
 prisma/dev.db*
 
+# Prisma generated client (regenerated from schema via `prisma generate`)
+server/src/generated/
+**/generated/prisma/
+
 # Logs
 logs/
 *.log

@@ -19,7 +19,7 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 | 1 | Select & shortlist 15–20 mHealth apps (18 selected) | No | 🟡 In progress |
 | 2 | Score each app with MARS | No | ⬜ Not started |
 | 3 | Design architecture & DB schema | Light | ✅ **Done** |
-| 4 | Build admin module (MARS input + storage) | Yes | 🟡 In progress (backend skeleton done) |
+| 4 | Build admin module (MARS input + storage) | Yes | 🟡 In progress (backend + database done) |
 | 5 | Build user survey module (consent + SUS + storage) | Yes | ⬜ Not started |
 | 6 | Build weighted ranking algorithm | Yes | ⬜ Not started |
 | 7 | Build recommendation engine (condition matching) | Yes | ⬜ Not started |
@@ -29,8 +29,9 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 
 **Legend:** ✅ Done · 🟡 In progress · ⬜ Not started
 
-**👉 Currently working on:** Phase 4 — backend skeleton scaffolded (`server/` with a `/health`
-endpoint). Next: verify it runs locally, then add the database (Prisma) and the first real routes.
+**👉 Currently working on:** Phase 4 — backend skeleton runs (`/health` ✅) and the database is
+set up (Prisma + SQLite, 8 tables migrated). Next: wire the Prisma client into Express and build
+the first real data routes (apps + MARS).
 
 ---
 

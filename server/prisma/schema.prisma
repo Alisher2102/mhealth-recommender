@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  passwordHash String
+  createdAt    DateTime         @default(now())
+  evaluations  MarsEvaluation[]
+}
+
+model App {
+  id               String          @id @default(cuid())
+  name             String
+  category         String          // T2DM | HYPERTENSION | COPD
+  platform         String
+  versionEvaluated String?
+  storeUrl         String?
+  description      String?
+  keyFeatures      String?
+  lastUpdatedOn    DateTime?
+  isActive         Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  marsEvaluation   MarsEvaluation?
+  susResponses     SusResponse[]
+}
+
+model MarsEvaluation {
+  id          String @id @default(cuid())
+  app         App    @relation(fields: [appId], references: [id])
+  appId       String @unique
+  evaluator   Admin  @relation(fields: [evaluatorId], references: [id])
+  evaluatorId String
+
+  // A. Engagement (5 items)
+  a1Entertainment Int
+  a2Interest      Int
+  a3Customisation Int
+  a4Interactivity Int
+  a5TargetGroup   Int
+  // B. Functionality (4 items)
+  b1Performance    Int
+  b2EaseOfUse      Int
+  b3Navigation     Int
+  b4GesturalDesign Int
+  // C. Aesthetics (3 items)
+  c1Layout      Int
+  c2Graphics    Int
+  c3VisualAppeal Int
+  // D. Information (7 items)
+  d1Accuracy       Int
+  d2Goals          Int
+  d3QualityOfInfo  Int
+  d4QuantityOfInfo Int
+  d5VisualInfo     Int
+  d6Credibility    Int
+  d7EvidenceBase   Int
+  // E. Subjective (4 items) — excluded from objective total
+  e1WouldRecommend Int
+  e2UseFrequency   Int
+  e3WouldPay       Int
+  e4OverallRating  Int
+
+  // Computed on write by the service layer
+  engagementMean    Float
+  functionalityMean Float
+  aestheticsMean    Float
+  informationMean   Float
+  subjectiveMean    Float
+  marsTotal         Float
+
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Participant {
+  id                  String          @id @default(cuid())
+  consentGiven        Boolean
+  consentVersion      String
+  consentedAt         DateTime
+  ageBand             String?
+  gender              String?
+  hasChronicCondition Boolean?
+  createdAt           DateTime        @default(now())
+  sessions            SurveySession[]
+}
+
+model SurveySession {
+  id                String          @id @default(cuid())
+  participant       Participant     @relation(fields: [participantId], references: [id])
+  participantId     String
+  condition         String
+  assignedAppIds    String          // JSON string[]
+  presentationOrder String          // JSON string[]
+  status            String          @default("in_progress")
+  startedAt         DateTime        @default(now())
+  completedAt       DateTime?
+  susResponses      SusResponse[]
+  preferences       AppPreference[]
+}
+
+model SusResponse {
+  id        String        @id @default(cuid())
+  session   SurveySession @relation(fields: [sessionId], references: [id])
+  sessionId String
+  app       App           @relation(fields: [appId], references: [id])
+  appId     String
+  q1        Int
+  q2        Int
+  q3        Int
+  q4        Int
+  q5        Int
+  q6        Int
+  q7        Int
+  q8        Int
+  q9        Int
+  q10       Int
+  susScore  Float
+  submittedAt DateTime @default(now())
+
+  @@unique([sessionId, appId])
+}
+
+model AppPreference {
+  id           String        @id @default(cuid())
+  session      SurveySession @relation(fields: [sessionId], references: [id])
+  sessionId    String
+  rankedAppIds String        // JSON string[]
+  createdAt    DateTime      @default(now())
+}
+
+model AlgorithmConfig {
+  id                  String   @id @default(cuid())
+  name                String   @unique
+  wMars               Float
+  wSus                Float
+  normalisationMode   String   // theoretical | observed
+  conditionMatchBoost Float    @default(0)
+  minSusResponses     Int      @default(3)
+  provenance          String
+  isDefault           Boolean  @default(false)
+  createdAt           DateTime @default(now())
+}

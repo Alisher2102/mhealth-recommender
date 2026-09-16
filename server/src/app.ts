@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { appsRouter } from "./routes/apps.js";
 
 /**
  * Builds and configures the Express application.
@@ -22,6 +23,7 @@ export function createApp(): Express {
   // Parse JSON request bodies
   app.use(express.json());
 
+  app.use("/api/apps", appsRouter);
   // Health check — used to confirm the server is up.
   app.get("/health", (_req: Request, res: Response) => {
     res.json({

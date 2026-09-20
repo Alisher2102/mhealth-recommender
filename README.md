@@ -19,7 +19,7 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 | 1 | Select & shortlist 15–20 mHealth apps (18 selected) | No | 🟡 In progress |
 | 2 | Score each app with MARS | No | ⬜ Not started |
 | 3 | Design architecture & DB schema | Light | ✅ **Done** |
-| 4 | Build admin module (MARS input + storage) | Yes | 🟡 In progress (backend + database done) |
+| 4 | Build admin module (MARS input + storage) | Yes | ✅ **Done** (auth + MARS entry) |
 | 5 | Build user survey module (consent + SUS + storage) | Yes | ⬜ Not started |
 | 6 | Build weighted ranking algorithm | Yes | ⬜ Not started |
 | 7 | Build recommendation engine (condition matching) | Yes | ⬜ Not started |
@@ -29,10 +29,10 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 
 **Legend:** ✅ Done · 🟡 In progress · ⬜ Not started
 
-**👉 Currently working on:** Phase 4 — admin authentication complete: bcrypt-hashed admin,
-`POST /api/auth/login` issues a JWT, and an `authGuard` middleware protects routes (verified via
-`GET /api/auth/me`). Next: the MARS entry endpoint (`POST /api/apps/:id/mars`), protected by the
-auth guard, with server-side computation of the subscale means + total.
+**👉 Currently working on:** Phase 4 — the protected MARS entry endpoint (`POST /api/apps/:id/mars`)
+is done: auth-guarded, server-side validation of all 23 items (1–5), pure-function scoring
+(subscale means + total), and upsert persistence. Next: the participant survey module (consent +
+SUS submission), then the recommendation engine.
 
 ---
 

@@ -29,10 +29,10 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 
 **Legend:** ✅ Done · 🟡 In progress · ⬜ Not started
 
-**👉 Currently working on:** Phase 4 — backend data foundation complete: Prisma client wired into
-Express, `GET /api/apps` reads from the DB (with `?category=` filter), and a seed script populates
-starting apps + the default algorithm config. Next: admin authentication and the MARS entry
-endpoint (`POST /api/apps/:id/mars`).
+**👉 Currently working on:** Phase 4 — admin authentication complete: bcrypt-hashed admin,
+`POST /api/auth/login` issues a JWT, and an `authGuard` middleware protects routes (verified via
+`GET /api/auth/me`). Next: the MARS entry endpoint (`POST /api/apps/:id/mars`), protected by the
+auth guard, with server-side computation of the subscale means + total.
 
 ---
 

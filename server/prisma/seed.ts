@@ -1,4 +1,5 @@
 import { PrismaClient } from "../src/generated/prisma/client.js";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -85,6 +86,16 @@ async function main() {
   });
   console.log("   ✓ Inserted default algorithm config");
 
+  await prisma.admin.deleteMany();
+
+  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
+  const adminPassword = process.env.ADMIN_PASSWORD ?? "changeme123";
+  const passwordHash = await bcrypt.hash(adminPassword, 12);
+
+  await prisma.admin.create({
+    data: { email: adminEmail, passwordHash },
+  });
+  console.log(`Inserted admin (${adminEmail})`);
   console.log("🌱 Seeding complete.");
 }
 

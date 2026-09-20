@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { appsRouter } from "./routes/apps.js";
+import { authRouter } from "./routes/auth.js";
 
 /**
  * Builds and configures the Express application.
@@ -24,6 +25,7 @@ export function createApp(): Express {
   app.use(express.json());
 
   app.use("/api/apps", appsRouter);
+  app.use("/api/auth", authRouter);
   // Health check — used to confirm the server is up.
   app.get("/health", (_req: Request, res: Response) => {
     res.json({

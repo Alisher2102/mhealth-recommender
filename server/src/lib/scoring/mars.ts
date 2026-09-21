@@ -40,11 +40,13 @@ export interface MarsScores {
   marsTotal: number;
 }
 
-/** Average a list of numbers, rounded to 2 decimal places. */
-function mean(values: number[]): number {
+function rawMean(values: number[]): number {
   const sum = values.reduce((acc, v) => acc + v, 0);
-  const avg = sum / values.length;
-  return Math.round(avg * 100) / 100;
+  return sum / values.length;
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
 }
 
 /**
@@ -52,28 +54,25 @@ function mean(values: number[]): number {
  * The overall total is the mean of the four OBJECTIVE subscale means only.
  */
 export function computeMarsScores(items: MarsItems): MarsScores {
-  const engagementMean = mean([
+  const engagement = rawMean([
     items.a1Entertainment,
     items.a2Interest,
     items.a3Customisation,
     items.a4Interactivity,
     items.a5TargetGroup,
   ]);
-
-  const functionalityMean = mean([
+  const functionality = rawMean([
     items.b1Performance,
     items.b2EaseOfUse,
     items.b3Navigation,
     items.b4GesturalDesign,
   ]);
-
-  const aestheticsMean = mean([
+  const aesthetics = rawMean([
     items.c1Layout,
     items.c2Graphics,
     items.c3VisualAppeal,
   ]);
-
-  const informationMean = mean([
+  const information = rawMean([
     items.d1Accuracy,
     items.d2Goals,
     items.d3QualityOfInfo,
@@ -82,28 +81,23 @@ export function computeMarsScores(items: MarsItems): MarsScores {
     items.d6Credibility,
     items.d7EvidenceBase,
   ]);
-
-  const subjectiveMean = mean([
+  const subjective = rawMean([
     items.e1WouldRecommend,
     items.e2UseFrequency,
     items.e3WouldPay,
     items.e4OverallRating,
   ]);
 
-  // Objective total = mean of the four objective subscale means.
-  const marsTotal = mean([
-    engagementMean,
-    functionalityMean,
-    aestheticsMean,
-    informationMean,
-  ]);
+  // Objective total from UNROUNDED subscale means
+  const total = rawMean([engagement, functionality, aesthetics, information]);
 
+  // Round only for presentation
   return {
-    engagementMean,
-    functionalityMean,
-    aestheticsMean,
-    informationMean,
-    subjectiveMean,
-    marsTotal,
+    engagementMean: round2(engagement),
+    functionalityMean: round2(functionality),
+    aestheticsMean: round2(aesthetics),
+    informationMean: round2(information),
+    subjectiveMean: round2(subjective),
+    marsTotal: round2(total),
   };
 }

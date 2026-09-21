@@ -94,20 +94,22 @@ rationale here as we go rather than trying to reconstruct it at the end._
 - **Trade-offs:** Some duplicated validation intent across client and server — acceptable and
   standard.
 
-## ADR-008 — MARS rounding: round each subscale mean to 2 dp, then average
+## ADR-008 — MARS rounding: average at full precision, round only for presentation
 
 - **Context:** `marsTotal` is the mean of the four objective subscale means. Rounding can be
   applied at different stages, which can shift the total by ~0.01–0.05.
-- **Decision (provisional):** round each subscale mean to 2 decimal places first, then average
-  those rounded means (also to 2 dp) to get `marsTotal`.
-- **Rationale:** The subscale means are themselves reported values in the study; rounding them
-  first means a reader who reads the reported subscale scores and averages them by hand will
-  reproduce the same `marsTotal`. This favours transparency and hand-reproducibility.
-- **Trade-off / alternative:** Keeping full floating-point precision throughout and rounding only
-  the final total is marginally more "numerically accurate" but makes the reported subscale numbers
-  and the total appear inconsistent to a reader recomputing by hand.
-- **Status:** Provisional — to confirm with supervisor. Whichever is chosen must be stated
-  explicitly in the methodology chapter for reproducibility.
+- **Decision:** Compute all means at **full floating-point precision** (average-then-round). The
+  overall total is computed from the UNROUNDED subscale means; every value is rounded to 2 d.p.
+  for presentation only.
+- **Rationale:** Avoids compounding rounding errors, so the total is the most numerically accurate
+  representation of the underlying item scores. This is the approach generally preferred in
+  quantitative analysis.
+- **Trade-off:** A reader averaging the *displayed* (rounded) subscale means by hand may get a
+  value differing from the reported total by ~0.01, because the total was computed from unrounded
+  means. Mitigated by stating in the methodology: "All computations retain full precision; values
+  are rounded to 2 d.p. for presentation only."
+- **Status:** Decided (confirm with supervisor at next meeting). Must be stated explicitly in the
+  methodology chapter for reproducibility.
 
 ---
 

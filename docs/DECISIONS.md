@@ -111,6 +111,20 @@ rationale here as we go rather than trying to reconstruct it at the end._
 - **Status:** Decided (confirm with supervisor at next meeting). Must be stated explicitly in the
   methodology chapter for reproducibility.
 
+## ADR-009 — SUS scoring per the standard Brooke (1986) formula
+
+- **Context:** Participant usability is measured with the System Usability Scale (SUS): 10 items,
+  each answered 1–5, with alternating positive (odd) and negative (even) wording.
+- **Decision:** Compute SUS by the standard formula — odd items contribute `answer − 1`, even items
+  contribute `5 − answer`, summed and multiplied by 2.5 to yield a 0–100 score.
+- **Rationale:** This is the validated, widely-cited SUS scoring method; using it verbatim keeps the
+  study comparable to the large body of SUS literature. The alternating item wording is a
+  deliberate design feature to counter acquiescence bias.
+- **Interpretation note (for the discussion chapter):** the *formula* outputs 100 for ideal
+  answers, 50 for all-neutral, 0 for worst-case. Separately, the literature benchmark is that a SUS
+  of ~68 is "average"; scores should be interpreted against that benchmark, not treated as simple
+  percentages. Keep the computation and the interpretation distinct in the write-up.
+
 ---
 
 ## Open questions / to confirm with supervisor

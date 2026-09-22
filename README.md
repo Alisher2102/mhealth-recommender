@@ -20,7 +20,7 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 | 2 | Score each app with MARS | No | ⬜ Not started |
 | 3 | Design architecture & DB schema | Light | ✅ **Done** |
 | 4 | Build admin module (MARS input + storage) | Yes | ✅ **Done** (auth + MARS entry) |
-| 5 | Build user survey module (consent + SUS + storage) | Yes | ⬜ Not started |
+| 5 | Build user survey module (consent + SUS + storage) | Yes | ✅ **Done** |
 | 6 | Build weighted ranking algorithm | Yes | ⬜ Not started |
 | 7 | Build recommendation engine (condition matching) | Yes | ⬜ Not started |
 | 8 | Build results / recommendation UI | Yes | ⬜ Not started |
@@ -29,10 +29,10 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 
 **Legend:** ✅ Done · 🟡 In progress · ⬜ Not started
 
-**👉 Currently working on:** Phase 4 — the protected MARS entry endpoint (`POST /api/apps/:id/mars`)
-is done: auth-guarded, server-side validation of all 23 items (1–5), pure-function scoring
-(subscale means + total), and upsert persistence. Next: the participant survey module (consent +
-SUS submission), then the recommendation engine.
+**👉 Currently working on:** Phases 4 & 5 complete — the admin module (auth + MARS entry) and the
+participant survey module (consent, randomised 3–5 app sessions, SUS submission with integrity
+checks) are both done. Both MARS and SUS data now flow into the database. **Next: Phase 6/7 — the
+weighted recommendation engine** (the academic centrepiece).
 
 ---
 

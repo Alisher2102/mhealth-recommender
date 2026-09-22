@@ -125,6 +125,29 @@ rationale here as we go rather than trying to reconstruct it at the end._
   of ~68 is "average"; scores should be interpreted against that benchmark, not treated as simple
   percentages. Keep the computation and the interpretation distinct in the write-up.
 
+## ADR-010 — Survey integrity: consent gate, randomised assignment, one-response-per-app
+
+- **Context:** Participant data must be ethically collected and methodologically sound to be
+  defensible in the dissertation and viva.
+- **Decisions:**
+  1. **Consent is enforced server-side** — a participant cannot be created (and thus cannot start a
+     session) unless `consentGiven === true`. Consent version + timestamp are recorded.
+  2. **App assignment is randomised** using an unbiased Fisher–Yates shuffle; each session gets a
+     random 3–5 app subset of the requested condition, and the presentation order is stored.
+  3. **A session requires ≥3 apps in the condition** (else `409`), matching the "3–5 apps per
+     participant" methodology.
+  4. **One SUS response per (session, app)** enforced by a composite unique constraint
+     (`@@unique([sessionId, appId])`); submission uses `upsert` so re-submitting updates rather
+     than erroring (avoids Prisma P2002 unique-violation).
+  5. **Apps must belong to the session** — a SUS submission for an app not in the assigned set is
+     rejected (`400`).
+- **Rationale:** These directly implement the ethics requirement (informed consent) and the bias
+  mitigations (randomised subset + order counter order effects), and protect dataset integrity —
+  all points that can be written up and defended.
+- **Trade-offs:** Fixed presentation order currently equals assignment order; could randomise them
+  independently later if needed. Fisher–Yates chosen over `sort(() => Math.random())` because the
+  latter is statistically biased.
+
 ---
 
 ## Open questions / to confirm with supervisor

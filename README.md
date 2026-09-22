@@ -21,18 +21,19 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 | 3 | Design architecture & DB schema | Light | ✅ **Done** |
 | 4 | Build admin module (MARS input + storage) | Yes | ✅ **Done** (auth + MARS entry) |
 | 5 | Build user survey module (consent + SUS + storage) | Yes | ✅ **Done** |
-| 6 | Build weighted ranking algorithm | Yes | ⬜ Not started |
-| 7 | Build recommendation engine (condition matching) | Yes | ⬜ Not started |
+| 6 | Build weighted ranking algorithm | Yes | ✅ **Done** |
+| 7 | Build recommendation engine (condition matching) | Yes | ✅ **Done** (API live) |
 | 8 | Build results / recommendation UI | Yes | ⬜ Not started |
 | 9 | Run survey with 30–50 participants | No | ⬜ Not started |
 | 10 | Analyse results & write dissertation | Light | ⬜ Not started |
 
 **Legend:** ✅ Done · 🟡 In progress · ⬜ Not started
 
-**👉 Currently working on:** Phases 4 & 5 complete — the admin module (auth + MARS entry) and the
-participant survey module (consent, randomised 3–5 app sessions, SUS submission with integrity
-checks) are both done. Both MARS and SUS data now flow into the database. **Next: Phase 6/7 — the
-weighted recommendation engine** (the academic centrepiece).
+**👉 Currently working on:** Backend feature-complete! Admin module (auth + MARS), survey module
+(consent + SUS), and the **weighted recommendation engine** (`GET /api/recommendations`) are all
+done — normalises MARS+SUS, applies configurable weights, ranks apps, flags low-confidence, and
+explains each result. **Next: Phase 8 — the React frontend UI** (admin panel, survey flow, results
+page), plus unit tests for the scoring functions and populating real evaluation data.
 
 ---
 

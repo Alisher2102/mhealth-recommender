@@ -148,6 +148,39 @@ rationale here as we go rather than trying to reconstruct it at the end._
   independently later if needed. Fisher–Yates chosen over `sort(() => Math.random())` because the
   latter is statistically biased.
 
+## ADR-011 — Min–max normalise MARS and SUS to [0,1] before weighting
+
+- **Context:** The recommendation score combines expert quality (MARS, range 1–5) and perceived
+  usability (mean SUS, range 0–100) using weights (default 0.6 MARS / 0.4 SUS).
+- **Problem:** Combining the raw scores directly (`0.6·marsTotal + 0.4·susMean`) lets SUS dominate
+  purely because of its larger numeric range — max MARS contribution ≈ 3, max SUS contribution ≈
+  40 — so the intended weighting is distorted and effectively meaningless.
+- **Decision:** Normalise both to [0,1] before weighting, against the instruments' theoretical
+  bounds: `marsNorm = (marsTotal − 1) / 4`, `susNorm = susMean / 100`. Then
+  `score = wMars·marsNorm + wSus·susNorm` with `wMars + wSus = 1`.
+- **Rationale:** Puts both criteria on equal footing so the weights reflect true relative
+  importance rather than scale artefacts. Using theoretical bounds (rather than the observed
+  min/max) keeps scores comparable across runs and datasets; an `observed` mode remains available
+  as a configurable alternative for sensitivity discussion.
+- **Trade-off:** Theoretical-bounds normalisation doesn't stretch to use the full [0,1] range if
+  no app hits the extremes; acceptable and more reproducible than observed-range scaling.
+
+## ADR-012 — Deterministic ranking with an explicit tie-breaker
+
+- **Context:** Apps are ranked by combined score. Two apps can score identically, and the algorithm
+  must produce a stable, reproducible order every run (a research tool must not reorder tied items
+  based on incidental database row order).
+- **Problem:** A comparator that returns 0 on ties leaves order to `Array.sort` stability + the
+  underlying `findMany` order, which has no explicit `orderBy` and can vary — i.e. non-reproducible.
+- **Decision:** Break ties deterministically: (1) higher combined score first; (2) if equal, higher
+  normalised MARS first (quality edge, nulls treated as -1); (3) if still equal, alphabetical by
+  app name (`localeCompare`) as a fully deterministic final fallback.
+- **Rationale:** Guarantees the same ranking on every run for the same data — essential for a
+  reproducible study and a defensible viva demo. Prefers quality (MARS) as the first tie-break, a
+  meaningful and justifiable rule.
+- **Trade-off:** Alphabetical fallback is arbitrary but deterministic; acceptable as a last resort
+  and clearly documented.
+
 ---
 
 ## Open questions / to confirm with supervisor

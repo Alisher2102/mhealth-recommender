@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { appsRouter } from "./routes/apps.js";
 import { authRouter } from "./routes/auth.js";
-
+import { surveyRouter } from "./routes/survey.js";
 /**
  * Builds and configures the Express application.
  * Kept separate from server startup so it can be imported in tests later.
@@ -26,6 +26,7 @@ export function createApp(): Express {
 
   app.use("/api/apps", appsRouter);
   app.use("/api/auth", authRouter);
+  app.use("/api", surveyRouter);
   // Health check — used to confirm the server is up.
   app.get("/health", (_req: Request, res: Response) => {
     res.json({

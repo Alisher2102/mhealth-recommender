@@ -11,7 +11,7 @@ async function main() {
   await prisma.algorithmConfig.deleteMany();
 
   const apps = [
-    // Category 1 — Diabetes (T2DM)
+    // Category 1 — Diabetes (T2DM) — 6 apps
     {
       name: "mySugr",
       category: "T2DM",
@@ -28,7 +28,40 @@ async function main() {
         "Glucose log with medication reminders, coaching and an A1C tracker.",
       keyFeatures: "Glucose log, medication reminders, coaching, A1C tracker",
     },
-    // Category 2 — Hypertension
+    {
+      name: "One Drop",
+      category: "T2DM",
+      platform: "Android / iOS",
+      description:
+        "Glucose tracking with diet, activity, medication and data-driven insights.",
+      keyFeatures: "Glucose tracking, diet, activity, medication, insights",
+    },
+    {
+      name: "Diabetes:M",
+      category: "T2DM",
+      platform: "Android / iOS",
+      description:
+        "Comprehensive diabetes diary with a bolus calculator and detailed reports.",
+      keyFeatures: "Diabetes diary, bolus calculator, reports",
+    },
+    {
+      name: "HealthifyMe",
+      category: "T2DM",
+      platform: "Android / iOS",
+      description:
+        "Diet tracking, calorie counter, coaching and a glucose log.",
+      keyFeatures: "Diet tracking, calorie counter, coaching, glucose log",
+    },
+    {
+      name: "Fooducate",
+      category: "T2DM",
+      platform: "Android / iOS",
+      description:
+        "Food scanner with nutrition education and blood-sugar guidance.",
+      keyFeatures: "Food scanner, nutrition education, blood sugar guidance",
+    },
+
+    // Category 2 — Hypertension — 6 apps
     {
       name: "SmartBP",
       category: "HYPERTENSION",
@@ -39,6 +72,20 @@ async function main() {
         "BP log, trend charts, doctor reports, colour-coded readings",
     },
     {
+      name: "Blood Pressure Monitor (MedM)",
+      category: "HYPERTENSION",
+      platform: "Android / iOS",
+      description: "BP tracker with device sync and health history.",
+      keyFeatures: "BP tracker, device sync, health history",
+    },
+    {
+      name: "Cardilog",
+      category: "HYPERTENSION",
+      platform: "iOS",
+      description: "Free BP tracker with Apple Health sync and PDF/CSV export.",
+      keyFeatures: "BP tracker, Apple Health sync, PDF/CSV export",
+    },
+    {
       name: "My Heart (BP Health)",
       category: "HYPERTENSION",
       platform: "Android / iOS",
@@ -46,7 +93,24 @@ async function main() {
         "BP diary aligned with AHA/ESC guidelines, with trend analysis.",
       keyFeatures: "BP diary, AHA/ESC guidelines, trend analysis",
     },
-    // Category 3 — COPD / Respiratory
+    {
+      name: "Welltory",
+      category: "HYPERTENSION",
+      platform: "Android / iOS",
+      description:
+        "HRV-based stress and BP insights with lifestyle correlation.",
+      keyFeatures: "HRV-based stress & BP insights, lifestyle correlation",
+    },
+    {
+      name: "OMRON Connect",
+      category: "HYPERTENSION",
+      platform: "Android / iOS",
+      description:
+        "BP tracking with Omron device sync and doctor-ready reports.",
+      keyFeatures: "BP tracking, Omron device sync, doctor-ready reports",
+    },
+
+    // Category 3 — COPD / Respiratory — 6 apps
     {
       name: "myCOPD",
       category: "COPD",
@@ -56,12 +120,41 @@ async function main() {
       keyFeatures: "Pulmonary rehab, inhaler training, symptom tracking",
     },
     {
+      name: "myAsthma",
+      category: "COPD",
+      platform: "Android / iOS",
+      description: "Asthma self-management built by clinical experts.",
+      keyFeatures: "Asthma self-management, clinician-built",
+    },
+    {
       name: "Propeller Health",
       category: "COPD",
       platform: "Android / iOS",
       description:
         "Inhaler tracking with medication reminders and trigger insights.",
       keyFeatures: "Inhaler tracking, medication reminders, trigger insights",
+    },
+    {
+      name: "AsthmaMD",
+      category: "COPD",
+      platform: "Android / iOS",
+      description: "Peak flow diary with symptom log and medication tracker.",
+      keyFeatures: "Peak flow diary, symptom log, medication tracker",
+    },
+    {
+      name: "Breathe Free",
+      category: "COPD",
+      platform: "Android / iOS",
+      description:
+        "Breathing exercises, lung-health education and a symptom log.",
+      keyFeatures: "Breathing exercises, lung health education, symptom log",
+    },
+    {
+      name: "ResApp",
+      category: "COPD",
+      platform: "Android / iOS",
+      description: "Respiratory symptom checker with cough analysis.",
+      keyFeatures: "Respiratory symptom checker, cough analysis",
     },
   ];
 

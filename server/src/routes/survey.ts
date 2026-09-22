@@ -1,5 +1,8 @@
 import { Router, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { computeSusScore } from "../lib/scoring/scoring.js";
+import { validateSusInput } from "../lib/scoring/validationSusHelper.js";
+import { JsonNull } from "../generated/prisma/internal/prismaNamespace.js";
 
 export const surveyRouter = Router();
 
@@ -110,3 +113,57 @@ surveyRouter.post("/survey/sessions/", async (req: Request, res: Response) => {
       .json({ error: { message: "Failed to start survey session" } });
   }
 });
+
+surveyRouter.post(
+  "/survey/sessions/:id/sus",
+  async (req: Request, res: Response) => {
+    try {
+      const sessionId = req.params.id;
+      const { appId } = req.body ?? {};
+
+      const session = await prisma.surveySession.findUnique({
+        where: { id: sessionId },
+      });
+      if (!session) {
+        return res
+          .status(404)
+          .json({ error: { message: "Survey session not found" } });
+      }
+      if (typeof appId !== "string") {
+        return res
+          .status(400)
+          .json({ error: { message: "appId is required" } });
+      }
+      const assigned: string[] = JSON.parse(session.assignedAppIds);
+      if (!assigned.includes(appId)) {
+        return res.status(400).json({
+          error: {
+            message: "This app is not part of the current survey session",
+          },
+        });
+      }
+
+      const validation = validateSusInput(req.body);
+      if (!validation.ok || !validation.answers) {
+        return res.status(400).json({
+          error: { message: "Invalid SUS input", details: validation.errors },
+        });
+      }
+
+      const susScore = computeSusScore(validation.answers);
+
+      const response = await prisma.susResponse.upsert({
+        where: { sessionId_appId: { sessionId, appId } },
+        create: { sessionId, appId, ...validation.answers, susScore },
+        update: { ...validation.answers, susScore },
+      });
+
+      return res.status(201).json({ id: response.id, appId, susScore });
+    } catch (err) {
+      console.error("Failed to save SUS response", err);
+      return res
+        .status(500)
+        .json({ error: { message: "Failed to save SUS response" } });
+    }
+  },
+);

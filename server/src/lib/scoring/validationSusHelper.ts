@@ -37,7 +37,7 @@ export function validateSusInput(body: unknown): SusValidationResult {
       value < 1 ||
       value > 5
     ) {
-      errors.push(`"${key}" must be an integer between 1 and 5`);
+      errors.push(`"${key}"must be an integer between 1 and 5`);
     } else {
       answers[key] = value;
     }

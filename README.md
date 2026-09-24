@@ -14,26 +14,40 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 > Tick a box when a phase is complete. This is the quick status view — full detail lives in
 > [`PROJECT.md`](./PROJECT.md).
 
+> **Deadline: report due 18 December 2026** · slides 19 Dec 2026 · recorded presentation by
+> 13 Jan 2027. Module CT095-6-M-RMCE.
+
+**Research governance status:** ⛔ **No ethics approval yet — participant recruitment is not
+authorised.** No survey data may be collected until Phase 9 completes.
+
 | Phase | Task | Coding? | Status |
 |:-----:|------|:-------:|--------|
-| 1 | Select & shortlist 15–20 mHealth apps (18 selected) | No | 🟡 In progress |
+| 1 | Select & shortlist 15–20 mHealth apps (18 seeded) | No | 🟡 Provisional (no inclusion evidence yet) |
 | 2 | Score each app with MARS | No | ⬜ Not started |
-| 3 | Design architecture & DB schema | Light | ✅ **Done** |
-| 4 | Build admin module (MARS input + storage) | Yes | ✅ **Done** (auth + MARS entry) |
-| 5 | Build user survey module (consent + SUS + storage) | Yes | ✅ **Done** |
-| 6 | Build weighted ranking algorithm | Yes | ✅ **Done** |
-| 7 | Build recommendation engine (condition matching) | Yes | ✅ **Done** (API live) |
-| 8 | Build results / recommendation UI | Yes | ⬜ Not started |
-| 9 | Run survey with 30–50 participants | No | ⬜ Not started |
-| 10 | Analyse results & write dissertation | Light | ⬜ Not started |
+| 3 | Design architecture & DB schema | Light | 🟢 Designed |
+| 4 | Admin module (auth + MARS entry) | Yes | 🟡 Implemented, untested |
+| 5 | Survey module (consent + SUS + storage) | Yes | 🔴 Implemented, **defects confirmed** |
+| 6 | Weighted ranking algorithm | Yes | 🟡 Implemented, untested |
+| 7 | Recommendation engine (condition matching) | Yes | 🟡 Implemented, untested |
+| 8 | Results / recommendation UI | Yes | ⬜ Not started |
+| 9 | **Ethics approval** (blocking) | No | 🔴 Not started |
+| 10 | Run survey with 30–50 participants | No | ⛔ Blocked by Phase 9 |
+| 11 | Validation analysis (C6) | Light | ⬜ Not started |
+| 12 | Entrepreneurial value analysis (C7) | No | ⬜ Not started |
+| 13 | Write dissertation (15,000–20,000 words) | No | ⬜ Not started |
+| 14 | Recorded presentation + demo | No | ⬜ Not started |
 
-**Legend:** ✅ Done · 🟡 In progress · ⬜ Not started
+**Legend:** 🟢 Designed · 🟡 Implemented (not verified) · 🔴 Needs work · ⛔ Blocked · ⬜ Not started
 
-**👉 Currently working on:** Backend feature-complete! Admin module (auth + MARS), survey module
-(consent + SUS), and the **weighted recommendation engine** (`GET /api/recommendations`) are all
-done — normalises MARS+SUS, applies configurable weights, ranks apps, flags low-confidence, and
-explains each result. **Next: Phase 8 — the React frontend UI** (admin panel, survey flow, results
-page), plus unit tests for the scoring functions and populating real evaluation data.
+**👉 Currently working on:** Three priorities, in order — (1) **submit the ethics summary + form**,
+since it blocks the entire survey; (2) **fix the confirmed survey-module defects** and add unit tests
+for the scoring functions; (3) **start Ch.2 (literature review)** and the **entrepreneurial value**
+analysis, which together carry 20% of the grade and need no code.
+
+> ⚠️ Earlier revisions of this file described the backend as "feature-complete". That was
+> inaccurate: no tests exist, and the survey module contains confirmed defects
+> (see [`PROJECT.md`](./PROJECT.md) §6a). "Implemented" now means the code exists and compiles —
+> nothing more.
 
 ---
 
@@ -44,6 +58,7 @@ page), plus unit tests for the scoring functions and populating real evaluation 
 | [`PROJECT.md`](./PROJECT.md) | Project brief: aim, objectives, users, scope, tech stack, phases, risks |
 | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | System architecture, API surface, MARS/SUS scoring, recommendation algorithm |
 | [`docs/DATABASE_SCHEMA.md`](./docs/DATABASE_SCHEMA.md) | Data model, Prisma schema, integrity rules |
+| [`docs/DECISIONS.md`](./docs/DECISIONS.md) | Design decision log (ADRs) — rationale feeding Ch.3 of the thesis |
 
 ---
 
@@ -55,7 +70,7 @@ page), plus unit tests for the scoring functions and populating real evaluation 
 | Backend | Node.js + Express (TypeScript) |
 | Database | PostgreSQL (prod) · SQLite (local dev) via Prisma |
 | Auth (admin) | JWT + bcrypt |
-| Algorithm | TypeScript (pure, unit-tested) |
+| Algorithm | TypeScript (pure functions — designed to be unit-testable; **tests not yet written**) |
 
 ---
 

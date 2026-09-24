@@ -2,13 +2,22 @@ import { Router, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { computeSusScore } from "../lib/scoring/scoring.js";
 import { validateSusInput } from "../lib/scoring/validationSusHelper.js";
-import { JsonNull } from "../generated/prisma/internal/prismaNamespace.js";
 
 export const surveyRouter = Router();
 
 const VALID_CONDITIONS = ["T2DM", "HYPERTENSION", "COPD"] as const;
 const CURRENT_CONSENT_VERSION = "v1";
 
+/** Minimum apps a condition needs before a session can run (ADR-010). */
+const MIN_APPS_PER_SESSION = 3;
+/** Maximum apps shown to one participant, to keep the task tolerable. */
+const MAX_APPS_PER_SESSION = 5;
+
+/**
+ * Unbiased Fisher-Yates shuffle. Chosen over `sort(() => Math.random() - 0.5)`
+ * because the latter is statistically biased and would undermine the
+ * randomisation claim in the methodology (ADR-010).
+ */
 function shuffle<T>(input: T[]): T[] {
   const arr = [...input];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -39,7 +48,10 @@ surveyRouter.post("/participants", async (req: Request, res: Response) => {
           typeof hasChronicCondition === "boolean" ? hasChronicCondition : null,
       },
     });
-    return res.json(201).json({ participantId: participant.id });
+    return res.status(201).json({
+      participantId: participant.id,
+      consentVersion: participant.consentVersion,
+    });
   } catch (err) {
     console.error("Failed to create participant", err);
     return res
@@ -48,7 +60,7 @@ surveyRouter.post("/participants", async (req: Request, res: Response) => {
   }
 });
 
-surveyRouter.post("/survey/sessions/", async (req: Request, res: Response) => {
+surveyRouter.post("/survey/sessions", async (req: Request, res: Response) => {
   try {
     const { participantId, condition } = req.body ?? {};
 
@@ -69,7 +81,7 @@ surveyRouter.post("/survey/sessions/", async (req: Request, res: Response) => {
     if (!VALID_CONDITIONS.includes(condition)) {
       return res.status(400).json({
         error: {
-          message: `condiition must be one of: ${VALID_CONDITIONS.join(", ")}.`,
+          message: `condition must be one of: ${VALID_CONDITIONS.join(", ")}.`,
         },
       });
     }
@@ -79,17 +91,20 @@ surveyRouter.post("/survey/sessions/", async (req: Request, res: Response) => {
       select: { id: true },
     });
 
-    if (apps.length < 3) {
+    if (apps.length < MIN_APPS_PER_SESSION) {
       return res.status(409).json({
         error: {
           message:
-            "Not enough apps available for this conditon to run a session",
+            "Not enough apps available for this condition to run a session",
         },
       });
     }
 
     const shuffled = shuffle(apps.map((a) => a.id));
-    const assigned = shuffled.slice(0, Math.min(5, shuffled.length));
+    const assigned = shuffled.slice(
+      0,
+      Math.min(MAX_APPS_PER_SESSION, shuffled.length),
+    );
 
     const session = await prisma.surveySession.create({
       data: {
@@ -113,6 +128,65 @@ surveyRouter.post("/survey/sessions/", async (req: Request, res: Response) => {
       .json({ error: { message: "Failed to start survey session" } });
   }
 });
+
+/**
+ * Returns the session with its assigned apps hydrated, in presentation order,
+ * plus which apps already have a SUS response. The survey UI needs app names and
+ * descriptions to render, and needs progress so a participant can resume rather
+ * than restart (which would otherwise lose partial data).
+ */
+surveyRouter.get(
+  "/survey/sessions/:id",
+  async (req: Request, res: Response) => {
+    try {
+      const session = await prisma.surveySession.findUnique({
+        where: { id: req.params.id },
+        include: { susResponses: { select: { appId: true } } },
+      });
+      if (!session) {
+        return res
+          .status(404)
+          .json({ error: { message: "Survey session not found" } });
+      }
+
+      const order: string[] = JSON.parse(session.presentationOrder);
+      const apps = await prisma.app.findMany({
+        where: { id: { in: order } },
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          platform: true,
+          storeUrl: true,
+          description: true,
+          keyFeatures: true,
+        },
+      });
+
+      // Preserve the stored presentation order; findMany order is not guaranteed.
+      const byId = new Map(apps.map((a) => [a.id, a]));
+      const ordered = order
+        .map((id) => byId.get(id))
+        .filter((a): a is (typeof apps)[number] => a !== undefined);
+
+      const completedAppIds = session.susResponses.map((r) => r.appId);
+
+      return res.json({
+        sessionId: session.id,
+        condition: session.condition,
+        status: session.status,
+        apps: ordered,
+        completedAppIds,
+        remainingCount: ordered.length - completedAppIds.length,
+      });
+    } catch (err) {
+      console.error("Failed to load session", err);
+      return res
+        .status(500)
+        .json({ error: { message: "Failed to load survey session" } });
+    }
+  },
+);
 
 surveyRouter.post(
   "/survey/sessions/:id/sus",
@@ -164,6 +238,153 @@ surveyRouter.post(
       return res
         .status(500)
         .json({ error: { message: "Failed to save SUS response" } });
+    }
+  },
+);
+
+/**
+ * Records the participant's own preference ordering of the apps they tried.
+ *
+ * This is the comparison data for Objective 5 / marking criterion C6: the
+ * system-generated ranking is validated against these human rankings (e.g. by
+ * Spearman rank correlation). Without it the validation chapter has nothing to
+ * correlate against, so this endpoint is research-critical, not optional.
+ *
+ * Upserted so a participant may revise their ranking without creating duplicate
+ * rows that would silently double-count in analysis.
+ */
+surveyRouter.post(
+  "/survey/sessions/:id/preferences",
+  async (req: Request, res: Response) => {
+    try {
+      const sessionId = req.params.id;
+      const { rankedAppIds } = req.body ?? {};
+
+      const session = await prisma.surveySession.findUnique({
+        where: { id: sessionId },
+      });
+      if (!session) {
+        return res
+          .status(404)
+          .json({ error: { message: "Survey session not found" } });
+      }
+
+      if (
+        !Array.isArray(rankedAppIds) ||
+        !rankedAppIds.every((id) => typeof id === "string")
+      ) {
+        return res.status(400).json({
+          error: { message: "rankedAppIds must be an array of app id strings" },
+        });
+      }
+
+      const assigned: string[] = JSON.parse(session.assignedAppIds);
+
+      // Every ranked app must belong to this session, or the ranking cannot be
+      // compared against the system ranking for the same app set.
+      const unknown = rankedAppIds.filter((id) => !assigned.includes(id));
+      if (unknown.length > 0) {
+        return res.status(400).json({
+          error: {
+            message: "rankedAppIds contains apps not assigned to this session",
+            details: unknown,
+          },
+        });
+      }
+
+      // Reject duplicates: a ranking with repeats is not a valid ordering.
+      if (new Set(rankedAppIds).size !== rankedAppIds.length) {
+        return res
+          .status(400)
+          .json({ error: { message: "rankedAppIds must not contain duplicates" } });
+      }
+
+      // Require a complete ranking. A partial ordering would make the rank
+      // correlation ambiguous, so it is rejected rather than silently padded.
+      if (rankedAppIds.length !== assigned.length) {
+        return res.status(400).json({
+          error: {
+            message: `rankedAppIds must rank all ${assigned.length} assigned apps`,
+          },
+        });
+      }
+
+      const existing = await prisma.appPreference.findFirst({
+        where: { sessionId },
+        select: { id: true },
+      });
+
+      const preference = existing
+        ? await prisma.appPreference.update({
+            where: { id: existing.id },
+            data: { rankedAppIds: JSON.stringify(rankedAppIds) },
+          })
+        : await prisma.appPreference.create({
+            data: { sessionId, rankedAppIds: JSON.stringify(rankedAppIds) },
+          });
+
+      return res.status(201).json({
+        id: preference.id,
+        sessionId,
+        rankedAppIds,
+      });
+    } catch (err) {
+      console.error("Failed to save app preferences", err);
+      return res
+        .status(500)
+        .json({ error: { message: "Failed to save app preferences" } });
+    }
+  },
+);
+
+/**
+ * Marks a session finished. Distinguishing completed from abandoned sessions
+ * matters for reporting response rates and for deciding which sessions are
+ * eligible for analysis.
+ */
+surveyRouter.patch(
+  "/survey/sessions/:id/complete",
+  async (req: Request, res: Response) => {
+    try {
+      const sessionId = req.params.id;
+      const session = await prisma.surveySession.findUnique({
+        where: { id: sessionId },
+        include: { susResponses: { select: { appId: true } } },
+      });
+      if (!session) {
+        return res
+          .status(404)
+          .json({ error: { message: "Survey session not found" } });
+      }
+
+      const assigned: string[] = JSON.parse(session.assignedAppIds);
+      if (session.susResponses.length < assigned.length) {
+        return res.status(409).json({
+          error: {
+            message: "Cannot complete: not all assigned apps have a SUS response",
+            details: {
+              expected: assigned.length,
+              received: session.susResponses.length,
+            },
+          },
+        });
+      }
+
+      const updated = await prisma.surveySession.update({
+        where: { id: sessionId },
+        data: { status: "completed", completedAt: new Date() },
+      });
+
+      return res.json({
+        sessionId: updated.id,
+        status: updated.status,
+        completedAt: updated.completedAt,
+      });
+    } catch (err) {
+      console.error("Failed to complete session", err);
+      return res
+        .status(500)
+        .json({ error: { message: "Failed to complete survey session" } });
     }
   },
 );

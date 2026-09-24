@@ -144,26 +144,28 @@ Status vocabulary is deliberately stricter than "done": **Designed → Implement
 (tested) **→ Approved** (ethics, where applicable) **→ Complete**. "Implemented" means the code
 exists and compiles; it does **not** imply it has been tested.
 
-| Phase | Task | Coding? | Status (24 Sep 2026) |
-|-------|------|---------|----------------------|
-| 1 | Select & shortlist 15–20 mHealth apps (18 seeded) | No | 🟡 Provisional — inclusion criteria + version/availability evidence not yet recorded |
-| 2 | Score each app with MARS | No | 🔴 Not started — evaluator protocol undefined (see §9.3) |
+| Phase | Task | Coding? | Status (24 Sep 2026, end of day) |
+|-------|------|---------|----------------------------------|
+| 1 | Select & shortlist 15–20 mHealth apps (18 seeded) | No | 🟡 Provisional — inclusion criteria, **store URLs**, version and availability evidence still missing (see §6c) |
+| 2 | Score each app with MARS | No | 🔴 **Not started — now the top technical blocker** (see §6c.3); evaluator protocol undefined (§9.3) |
 | 3 | Design architecture & DB schema | Light | 🟢 Designed — some documented components not built |
-| 4 | Admin module (auth + MARS entry) | Yes | 🟡 Implemented, **not verified** — no tests |
-| 5 | Survey module (consent + SUS + storage) | Yes | 🔴 Implemented **with confirmed defects** — see §6a |
-| 6 | Weighted ranking algorithm | Yes | 🟡 Implemented, **not verified** — no tests |
-| 7 | Recommendation engine (condition matching) | Yes | 🟡 Implemented; "personalisation" is condition filtering only |
-| 8 | Results / recommendation UI | Yes | 🔴 Not started |
+| 4 | Admin module (auth + MARS entry) | Yes | 🟡 Implemented; auth verified manually, MARS entry not yet exercised |
+| 5 | Survey module (consent + SUS + storage) | Yes | 🟢 **Verified** — defects fixed, full participant flow exercised end to end (§6b) |
+| 6 | Weighted ranking algorithm | Yes | 🟢 **Verified** — 24 unit tests passing; SUS score confirmed over HTTP |
+| 7 | Recommendation engine (condition matching) | Yes | 🟡 Verified as *running*; output not yet meaningful without MARS data. "Personalisation" is still condition filtering only |
+| 8 | Results / recommendation UI | Yes | 🟡 In progress — Vite + React + TS scaffold created |
 | 9 | **Ethics approval** (blocking gate) | No | 🔴 **Not started — blocks Phase 10** |
 | 10 | Run survey with 30–50 participants | No | ⛔ Blocked by Phase 9 |
-| 11 | Validation analysis (C6) | Light | 🔴 Not started |
+| 11 | Validation analysis (C6) | Light | 🔴 Not started — capture endpoint now exists (§6b) |
 | 12 | Entrepreneurial value analysis (C7) | No | 🔴 Not started |
 | 13 | Write dissertation (15,000–20,000 words) | No | 🔴 Not started |
 | 14 | Recorded presentation + demo | No | 🔴 Not started |
 
-### 6a. Known defects blocking Phase 5 sign-off
+### 6a. Defects found and fixed — 24 Sep 2026 ✅ RESOLVED
 
-Confirmed by code inspection on 24 Sep 2026:
+All three were found by code inspection, fixed, and confirmed working over HTTP the same day.
+Retained here (rather than deleted) because the first one is directly relevant to the
+data-integrity discussion in the methodology chapter.
 
 1. **`server/src/lib/scoring/validationSusHelper.ts`** — the guard reads
    `if (error.length > 0)`, where `error` is the imported `console.error` **function**, not the
@@ -178,8 +180,63 @@ Confirmed by code inspection on 24 Sep 2026:
    (`../generated/prisma/internal/...`); internal paths are not part of Prisma's public API and can
    break on minor upgrades.
 
-No automated tests exist anywhere in the repository, which is why defects 1–2 went unnoticed. These
-must be fixed and covered by tests **before** any participant data is collected.
+No automated tests existed at the time, which is why defects 1–2 went unnoticed. Defect 2 was
+independently spotted and fixed locally by the author before the repository fix landed.
+
+### 6b. Verification record — 24 Sep 2026
+
+Evidence for criterion C3 (design/method). Both layers were verified, and the distinction between
+them matters: passing unit tests do **not** demonstrate that the API works.
+
+**Unit tests — 24 tests, 6 suites, all passing** (`npm test`, Node 22.11.0):
+
+| Suite | Covers |
+|-------|--------|
+| `mars.test.ts` (8) | Instrument bounds (1–5), per-subscale item counts, Section E exclusion (ADR-004), average-then-round precision (ADR-008) |
+| `scoring.test.ts` (7) | SUS reference values — ideal 100, worst 0, neutral 50, and **all-1s / all-5s both 50** because item wording alternates |
+| `validationSusHelper.test.ts` (9) | Rejection of missing items, out-of-range, non-integer, numeric strings, null and non-object bodies |
+
+The ADR-008 test deliberately uses input where average-then-round (3.15) and round-then-average
+(3.16) **disagree**, so it can actually fail if the rounding policy regresses.
+
+**API verification — full participant flow exercised with `curl`:**
+
+| Check | Result |
+|-------|--------|
+| `POST /api/participants` with consent | `201` + participant id |
+| `POST /api/participants` without consent | `400` — consent gate enforced server-side (ADR-010) |
+| `POST /api/survey/sessions` | `201`, 5 apps assigned in randomised order |
+| `GET /api/survey/sessions/:id` | Apps hydrated in stored presentation order, progress reported |
+| `POST /.../sus` with valid answers | `201`, `susScore` **77.5** — matching the value predicted by hand from Brooke's formula |
+| `POST /.../sus` with `q1:99` and 8 items missing | `400` listing exactly 9 offending items, correctly **accepting** the one valid item |
+| `POST /.../preferences` with a partial ranking | `400` — incomplete orderings refused |
+| `POST /.../preferences` with a full ranking | `201` |
+| `PATCH /.../complete` with 1 of 5 answered | `409` — completion guard works |
+| `PATCH /.../complete` with 5 of 5 answered | `200`, status `completed` |
+| `GET /api/recommendations?condition=T2DM` | `200`, ranked output with confidence flags |
+
+Security headers (Helmet) and the CORS origin restriction to the React dev server were both
+observed in responses — supporting evidence for C9 (professionalism).
+
+### 6c. Open issues surfaced by verification
+
+Three issues that verification exposed. None is a code defect; all three affect research validity.
+
+1. **Test data is mixed into the development database.** Recommendation output showed 2 SUS
+   responses for apps that received only 1 during the scripted run, meaning earlier manual test
+   data persists in `dev.db`. **Action:** delete `dev.db` and re-run `prisma migrate dev` +
+   `prisma db seed` before any real collection, and never point a live survey at a database that
+   has held test data. Contaminated data would otherwise have to be disclosed as a limitation.
+2. **`storeUrl` is `null` for every seeded app.** Participants cannot install or try an app the
+   survey never locates. Each app record needs a store URL, the **version evaluated**, and the
+   **date checked** — required both for the participant task and for reproducibility, since these
+   apps change frequently (already on the risk register).
+3. **Missing MARS data caps every recommendation at 0.4 and still ranks unevaluated apps.**
+   With `wMars = 0.6` and no MARS evaluations, 60% of every score is structurally absent, so the
+   top-ranked app scored `0.39` of a possible `1.0`. Worse, an app with *neither* MARS nor SUS data
+   (HealthifyMe) was still ranked, scored as `0`. This is ADR-017 confirmed empirically: it
+   elevates Phase 2 (MARS scoring) from routine work to **the blocker on the recommendation engine
+   producing meaningful output at all**, and it needs an explicit eligibility rule.
 
 ---
 
@@ -213,7 +270,11 @@ must be fixed and covered by tests **before** any participant data is collected.
 | Scope creep in development | High | Medium | 🟡 | Strict MVP, hard dev-freeze date, protect write-up time |
 | **Ethics approval delays survey past the usable window** | High | Critical | 🔴 | Submit ethics summary + form immediately; survey cannot legitimately run without it |
 | **C7 entrepreneurial value (10%) not addressed** | Was certain | High | 🔴 | Added as Objective 6 + Phase 12; write into Ch.1 and Ch.5 |
-| **Silent data corruption from unvalidated SUS input** | Confirmed defect | Critical | 🔴 | Fix `validationSusHelper`, add unit tests before collecting any data |
+| ~~Silent data corruption from unvalidated SUS input~~ | Was confirmed | Critical | ✅ **Closed** | Fixed and covered by 9 regression tests; rejection verified over HTTP (§6b) |
+| **Test data contaminating the real dataset** | Confirmed present | High | 🔴 | Wipe `dev.db` and re-seed before collection; keep test and live databases separate (§6c.1) |
+| **Recommendations meaningless until MARS data exists** | Certain | High | 🔴 | Phase 2 elevated to top technical priority; 60% of each score is absent without it (§6c.3) |
+| **Apps with no data still appear in rankings** | Confirmed | Medium | 🟡 | Define an eligibility rule per ADR-017; report insufficient-data apps separately rather than scoring them 0 |
+| **Participants cannot locate the apps to try** | Confirmed | High | 🔴 | Populate `storeUrl`, version evaluated, and date checked for all 18 apps before the survey (§6c.2) |
 | **Write-up compressed by continued development** | High | Critical | 🔴 | Hard freeze mid-Nov; 6 of 10 criteria need no further code |
 | Presentation recording missed by 13 Jan | Low | High | 🟡 | Non-submission = 0 for that component; schedule the recording in December |
 

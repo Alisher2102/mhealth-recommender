@@ -25,11 +25,11 @@ authorised.** No survey data may be collected until Phase 9 completes.
 | 1 | Select & shortlist 15–20 mHealth apps (18 seeded) | No | 🟡 Provisional (no inclusion evidence yet) |
 | 2 | Score each app with MARS | No | ⬜ Not started |
 | 3 | Design architecture & DB schema | Light | 🟢 Designed |
-| 4 | Admin module (auth + MARS entry) | Yes | 🟡 Implemented, untested |
-| 5 | Survey module (consent + SUS + storage) | Yes | 🔴 Implemented, **defects confirmed** |
-| 6 | Weighted ranking algorithm | Yes | 🟡 Implemented, untested |
-| 7 | Recommendation engine (condition matching) | Yes | 🟡 Implemented, untested |
-| 8 | Results / recommendation UI | Yes | ⬜ Not started |
+| 4 | Admin module (auth + MARS entry) | Yes | 🟡 Implemented; MARS entry not yet exercised |
+| 5 | Survey module (consent + SUS + storage) | Yes | 🟢 **Verified** — defects fixed, flow tested |
+| 6 | Weighted ranking algorithm | Yes | 🟢 **Verified** — 24 tests passing |
+| 7 | Recommendation engine (condition matching) | Yes | 🟡 Runs correctly; needs MARS data to be meaningful |
+| 8 | Results / recommendation UI | Yes | 🟡 Scaffold created (Vite + React + TS) |
 | 9 | **Ethics approval** (blocking) | No | 🔴 Not started |
 | 10 | Run survey with 30–50 participants | No | ⛔ Blocked by Phase 9 |
 | 11 | Validation analysis (C6) | Light | ⬜ Not started |
@@ -37,17 +37,30 @@ authorised.** No survey data may be collected until Phase 9 completes.
 | 13 | Write dissertation (15,000–20,000 words) | No | ⬜ Not started |
 | 14 | Recorded presentation + demo | No | ⬜ Not started |
 
-**Legend:** 🟢 Designed · 🟡 Implemented (not verified) · 🔴 Needs work · ⛔ Blocked · ⬜ Not started
+**Legend:** 🟢 Verified (actually exercised) · 🟡 Implemented or partial · 🔴 Needs work · ⛔ Blocked · ⬜ Not started
 
-**👉 Currently working on:** Three priorities, in order — (1) **submit the ethics summary + form**,
-since it blocks the entire survey; (2) **fix the confirmed survey-module defects** and add unit tests
-for the scoring functions; (3) **start Ch.2 (literature review)** and the **entrepreneurial value**
-analysis, which together carry 20% of the grade and need no code.
+**👉 Currently working on:** Building the **Phase 8 survey UI**. Backend is verified as of
+24 Sep 2026 — 24 unit tests passing and the full participant flow exercised end to end
+(see [`PROJECT.md`](./PROJECT.md) §6b).
 
-> ⚠️ Earlier revisions of this file described the backend as "feature-complete". That was
-> inaccurate: no tests exist, and the survey module contains confirmed defects
-> (see [`PROJECT.md`](./PROJECT.md) §6a). "Implemented" now means the code exists and compiles —
-> nothing more.
+**Priorities in order:**
+1. 🔴 **Submit the ethics summary + form** — blocks the entire survey, and carries 20% of the grade
+2. 🟠 **Survey UI** (consent → condition → SUS → ranking → done)
+3. 🟠 **MARS-score the apps** — without it, 60% of every recommendation score is missing
+4. 🟠 **Start Ch.2 and the entrepreneurial-value analysis** — 20% of the grade, needs no code
+
+> ⚠️ Earlier revisions of this file described the backend as "feature-complete" and the algorithm as
+> "unit-tested" before either was true. Both are now accurate, but the status vocabulary stays
+> strict: **Implemented** means it compiles, **Verified** means it was actually exercised. Note that
+> unit tests cover the scoring functions only — the API was verified manually, not by automated
+> route tests.
+
+### Before collecting real data
+
+Three blockers recorded in [`PROJECT.md`](./PROJECT.md) §6c:
+- **Wipe `dev.db` and re-seed** — it currently holds manual test responses (ADR-018)
+- **Populate `storeUrl`, version and date checked** for all 18 apps — participants cannot try an app the survey never locates
+- **Settle the missing-data eligibility rule** — apps with no MARS or SUS data are currently still ranked, scored as 0 (ADR-017)
 
 ---
 

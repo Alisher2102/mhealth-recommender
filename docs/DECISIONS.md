@@ -183,10 +183,130 @@ rationale here as we go rather than trying to reconstruct it at the end._
 
 ---
 
+# Amendments following the project briefing (24 Sep 2026)
+
+The Project Paper Briefing of 18 Sep 2026 supplied the confirmed marking rubric, deadlines, and
+ethics workflow. Several earlier ADRs asserted more than the evidence supported and are corrected
+here rather than silently edited, so the reasoning trail stays honest.
+
+- **Preamble correction.** This log previously stated that the handbook "weights the written
+  analysis and knowledge gained far above the software artefact". The *direction* is right, but the
+  handbook states no numeric weighting. The **actual** rubric is ten criteria at 10% each, in which
+  implementation is not a standalone criterion — the stronger and now evidenced statement.
+- **ADR-001.** The architectural choice stands. The claim about what "examiners expect" is removed:
+  the rubric rewards design/method (C3) and validation (C6), not engineering volume.
+- **ADR-003.** The claim that switching database provider needs only a connection-string change is
+  inaccurate. `schema.prisma` pins `provider = "sqlite"`; a move to PostgreSQL also requires a
+  provider edit, client regeneration, and a fresh migration baseline.
+- **ADR-005.** Downgraded from "unit-tested" to **"designed to be unit-testable"**. No test
+  framework, test script, or test file exists. The two defects recorded in `PROJECT.md` §6a are the
+  direct consequence.
+- **ADR-010.** Downgraded from a decided ethics implementation to **provisional technical controls
+  pending approval**. A server-side boolean consent gate is a useful control but is *not*
+  informed-consent compliance, which additionally requires an approved participant information
+  sheet, withdrawal route, and data-handling declaration.
+- **ADR-011.** The 0.6 / 0.4 split remains a **working hypothesis**, not a decision, until it has
+  literature support and a sensitivity analysis.
+
+---
+
+## ADR-013 — Treat ethics approval as a hard, blocking gate before any data collection
+
+- **Context:** The briefing confirms ethics carries **20% of the grade** (C8 ethical implications +
+  C9 ethics and professionalism) and defines the workflow: a one-page research summary, the correct
+  form, **supervisor and second-marker signatures**, then submission to Moodle. Three mutually
+  exclusive forms exist (disclaimer, fast track, full track).
+- **Decision:** No participant may be recruited, piloted, or have data recorded until written
+  approval exists. Ethics is modelled as **Phase 9**, blocking Phase 10, rather than as paperwork
+  running alongside development.
+- **Rationale:** Data collected before approval is unusable and unpublishable, and would jeopardise
+  20% of the marks plus CLO3. The gate is also cheap to honour now and impossible to repair later.
+- **Route:** Prepare for **full track**. The study involves human participants, self-reported
+  chronic-condition status, and potentially patients — the fast-track form routes any such "yes" to
+  full review, and the disclaimer form is not defensible here. The supervisor/ethics chair makes the
+  formal determination.
+- **Trade-off:** Full track takes longer to prepare and review, compressing the survey window. This
+  is accepted; the alternative is an invalid study.
+- **Status:** Decided. Route pending confirmation.
+
+## ADR-014 — Add entrepreneurial value as an explicit objective
+
+- **Context:** Marking criterion **C7 (10%)** and **CLO2** require justification of the
+  entrepreneurial value and prospects of the proposed solution. Neither appeared anywhere in the
+  project's aim, objectives, scope, or documentation before this date — a fully unaddressed tenth of
+  the grade.
+- **Decision:** Add **Objective 6** (entrepreneurial value and commercialisation prospects) and
+  **Phase 12**, and allocate explicit sections in Ch.1 and Ch.5 covering market need, target
+  segment, cost/benefit, adoption barriers, competing offerings, and a sustainability model.
+- **Rationale:** An unaddressed criterion scores zero regardless of how strong the engineering is.
+  This is also the single highest-value, lowest-effort correction available: it requires no code.
+- **Trade-off:** None of substance; it is a required deliverable.
+- **Status:** Decided.
+
+## ADR-015 — Fix and test research-critical code before collecting data
+
+- **Context:** Inspection confirmed that SUS input validation never rejects invalid input (the guard
+  tests the arity of an imported `console.error` function instead of the `errors` array), and that
+  participant registration uses an invalid Express call. There are no tests in the repository.
+- **Decision:** Treat correctness of the scoring and capture path as a **research-validity**
+  requirement, not a code-quality preference. Fix both defects, then add unit tests covering MARS and
+  SUS boundary values, invalid and missing input, and ranking ties, before any participant data is
+  collected.
+- **Rationale:** A silently wrong SUS score corrupts the dataset that Ch.4 and the C6 validation
+  depend on, and the corruption would be undetectable after the fact. Tests are also the concrete
+  evidence behind claims made in Ch.3 about instrument implementation.
+- **Trade-off:** Costs development time inside a compressed schedule; justified because the
+  alternative risks invalidating the empirical contribution entirely.
+- **Status:** Decided; not yet implemented.
+
+## ADR-016 — Scope discipline driven by the marking rubric
+
+- **Context:** The rubric contains no standalone criterion for implementation quality. Six of the
+  ten criteria (C1, C2, C4, C5, C7, C10) can be satisfied with no further code. Roughly twelve weeks
+  remain to the 18 Dec 2026 report deadline, and no chapter has been drafted.
+- **Decision:** Build only what the approved protocol and the C3/C6 evidence require. Institute a
+  **hard development freeze in mid-November**. Deliberately out of scope unless a criterion demands
+  them: multi-admin roles, app-store scraping, a sensitivity-analysis UI, CSV export tooling beyond
+  what the analysis needs, and any UI beyond the survey and results screens.
+- **Rationale:** Effort spent beyond the rubric is unmarked, and the dominant risk in this project is
+  now an unwritten 15,000–20,000-word thesis rather than an incomplete prototype. The handbook
+  explicitly accepts a prototype where a complete product is unrealistic.
+- **Trade-off:** The artefact will be visibly a prototype. Acceptable and defensible.
+- **Status:** Decided.
+
+## ADR-017 — Missing-score policy must be a stated methodological rule
+
+- **Context:** `recommend.ts` converts absent MARS or SUS values to `0` before weighting. An app with
+  no evaluation data therefore still receives a score and remains in the ranking, and can surface as
+  a fallback recommendation.
+- **Problem:** Treating "not yet measured" as "measured as worst" is a substantive methodological
+  claim disguised as a default value, and it is not currently documented or justified.
+- **Decision (proposed):** Define an explicit eligibility rule — an app must have a MARS evaluation
+  and a minimum number of SUS responses to be *ranked*; apps failing that threshold are reported
+  separately as "insufficient data" rather than scored as zero. To be confirmed with the supervisor
+  and stated in Ch.3.
+- **Rationale:** Reviewers will ask how missing data was handled; the answer must be a defensible
+  rule, not an implementation artefact.
+- **Status:** Proposed — needs supervisor confirmation, then implementation.
+
+---
+
 ## Open questions / to confirm with supervisor
 
-- Ethics approval form + process (COMPULSORY before recruiting participants; target users skew
-  elderly = "vulnerable" — frame as general usability study with general adults + informed consent).
+_Process now confirmed (briefing 18 Sep 2026): one-page research summary → correct form →
+supervisor **and second-marker** signatures → submit to Moodle. The remaining questions are
+substantive, not procedural._
+
+- **Which ethics route applies** (disclaimer / fast track / full track)? Prepare for full track —
+  see ADR-013. Note: the population cannot be reframed as "general adults" purely to avoid review;
+  if the study genuinely recruits people managing chronic conditions, it must say so.
+- **Supervisor meeting count** — briefing says ≥3, the logsheet template says 6. Assume 6.
+- **Is click-through electronic consent acceptable**, and what audit evidence is required?
+- **MARS evaluator protocol** — single rater or multiple with inter-rater reliability? Determines
+  whether the scores can legitimately be called "expert".
+- **Missing-data eligibility rule** for ranking (ADR-017).
 - Weight justification for the recommendation algorithm (0.6 MARS / 0.4 SUS) — needs literature
   backing + a sensitivity analysis.
+- **Sample-size adequacy** — is 30–50 participants spread across 3 conditions and 18 apps defensible
+  for the C6 validation, or should scope narrow to one condition / fewer apps?
 - Final title wording (handbook: ≤15 words, avoid "An investigation of…"/"Analysis of…" openers).

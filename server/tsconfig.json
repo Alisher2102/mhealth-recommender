@@ -14,6 +14,8 @@
     "sourceMap": true,
     "types": ["node"]
   },
+  // Includes test files so `npm run typecheck` checks them too.
+  // The production build uses tsconfig.build.json, which excludes them.
   "include": ["src/**/*", "prisma/**/*"],
   "exclude": ["node_modules", "dist", "prisma/seed.ts"]
 }

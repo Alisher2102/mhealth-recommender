@@ -1,0 +1,15 @@
+{
+  // Production build config. Identical to tsconfig.json except that test files
+  // are excluded, so `dist/` contains only shipping code.
+  //
+  // Kept separate (rather than excluding tests in tsconfig.json) so that
+  // `npm run typecheck` still type-checks the tests -- a test that does not
+  // compile is a test that is not protecting anything.
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "dist",
+    "prisma/seed.ts",
+    "src/**/*.test.ts"
+  ]
+}

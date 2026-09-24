@@ -2,15 +2,18 @@
 
 > **A Comparative Evaluation and Intelligent Recommendation System for Mobile Health Applications in Chronic Disease Self-Management**
 
-_Master's dissertation project (MSc Software Engineering), module **CT095-6-M-RMCE** (Dissertation /
-Project Paper). This document is the single source of truth for scope, objectives, and technical
-direction._
+_Master's dissertation project (MSc Software Engineering), module **Project Paper (122026-RJD)**.
+This document is the single source of truth for scope, objectives, and technical direction._
 
 > **Requirements baseline — updated 24 Sep 2026.** The programme constraints in §9 are no longer
 > assumptions: they are taken from the **Project Paper Briefing dated 18 Sep 2026** (the current
 > cohort authority) and the **APU Thesis/Dissertation Handbook v2.0**. Where the two sources
 > disagree, the briefing wins and the conflict is logged in §9.3 for supervisor confirmation.
 > University source documents are deliberately **not** stored in this repository.
+>
+> _Note: the briefing slides carry a `CT095-6-M-RMCE` footer, but RMCE (Research Methodology) is the
+> earlier module — the briefing itself distinguishes "the same project of RMCE/RM" from "project
+> paper". The module for this submission is **Project Paper (122026-RJD)**._
 
 ---
 
@@ -232,7 +235,7 @@ must be fixed and covered by tests **before** any participant data is collected.
 | Supervision | Meet supervisor **at least 3 times**; second marker once (optional); record every meeting on the logsheets |
 | Ethics workflow | 1-page research summary → complete the correct form → obtain **supervisor *and* second-marker signatures** → submit form + summary to **Moodle** |
 | Ethics forms | Disclaimer (no ethical issues) · Fast Track · Full Track |
-| Similarity | Keep reused RMCE/RM content **below 15%**; paraphrase |
+| Similarity | If reusing your earlier **RMCE / Research Methodology** work, keep that reused content **below 15%**; paraphrase |
 | Presentation content | Introduction · LR summary & inferences · Methodology · Project schedule · Implementation/results · Validation · Conclusions — **and demo the prototype** |
 | Technology | No mandated or forbidden stack — free choice |
 

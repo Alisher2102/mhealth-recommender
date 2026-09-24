@@ -15,7 +15,7 @@ multi-criteria algorithm to recommend the most suitable app for a given chronic 
 > [`PROJECT.md`](./PROJECT.md).
 
 > **Deadline: report due 18 December 2026** · slides 19 Dec 2026 · recorded presentation by
-> 13 Jan 2027. Module CT095-6-M-RMCE.
+> 13 Jan 2027. Module: **Project Paper (122026-RJD)**.
 
 **Research governance status:** ⛔ **No ethics approval yet — participant recruitment is not
 authorised.** No survey data may be collected until Phase 9 completes.

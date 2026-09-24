@@ -257,7 +257,15 @@ here rather than silently edited, so the reasoning trail stays honest.
   evidence behind claims made in Ch.3 about instrument implementation.
 - **Trade-off:** Costs development time inside a compressed schedule; justified because the
   alternative risks invalidating the empirical contribution entirely.
-- **Status:** Decided; not yet implemented.
+- **Status:** ✅ **Implemented and verified, 24 Sep 2026.** Both defects fixed; 24 unit tests across
+  MARS, SUS, and input validation all passing; the full participant flow exercised over HTTP. The
+  SUS score returned by the API (77.5) matched the value derived by hand from Brooke's formula,
+  confirming the chain from request through validation and scoring to persistence. See
+  `PROJECT.md` §6b for the verification record.
+- **Follow-on note:** unit tests cover the pure scoring functions only. There are still **no
+  automated route or integration tests** — the API was verified manually. If the survey logic
+  changes again, that manual check has to be repeated by hand, so route tests remain a sensible
+  addition if time allows.
 
 ## ADR-016 — Scope discipline driven by the marking rubric
 
@@ -287,7 +295,41 @@ here rather than silently edited, so the reasoning trail stays honest.
   and stated in Ch.3.
 - **Rationale:** Reviewers will ask how missing data was handled; the answer must be a defensible
   rule, not an implementation artefact.
-- **Status:** Proposed — needs supervisor confirmation, then implementation.
+- **Empirical confirmation (24 Sep 2026).** Running `GET /api/recommendations?condition=T2DM`
+  against SUS-only data made both halves of the problem concrete:
+  1. **An app with no data at all was still ranked.** "HealthifyMe" had `marsNorm: null` and
+     `susNorm: null`, yet appeared at rank 6 with `score: 0` — present in the ranking purely
+     because absence was coerced to zero. It should have been excluded as ineligible.
+  2. **Absent MARS silently caps the whole scale.** With `wMars = 0.6`, no MARS data means 60% of
+     every score is structurally missing, so the top-ranked app scored `0.39` of a possible `1.0`.
+     Nothing can exceed `0.4`. The numbers are not on the scale a reader would assume, which is a
+     reporting hazard as much as a ranking one.
+  The engine behaved exactly as written; the defect is in the *policy*, not the code. Note also
+  that `lowConfidence: true` and a human-readable `reason` were correctly emitted on every row —
+  the system is honest about its own data quality, which is the right foundation to build the
+  eligibility rule on.
+- **Consequence for planning:** this promotes MARS evaluation (Phase 2) from routine preparation to
+  the blocker on the recommendation engine producing meaningful output at all.
+- **Status:** Proposed, now evidenced. Needs supervisor confirmation, then implementation.
+
+## ADR-018 — Keep test data out of the analysis database
+
+- **Context:** Verification on 24 Sep 2026 showed recommendation output reporting 2 SUS responses
+  for apps that had received only 1 during that session, revealing that earlier manual test data
+  was still present in `dev.db`.
+- **Problem:** Once fabricated test responses and real participant responses share a database, they
+  cannot be reliably separated after the fact, and every descriptive statistic and correlation
+  computed from that data is suspect. It would have to be disclosed as a limitation at best.
+- **Decision:** Treat the development database as disposable and never let it become the analysis
+  database. Before collection begins: delete `dev.db`, re-run `prisma migrate dev` and
+  `prisma db seed`, and confirm the SUS response count is zero. Live participant data lives in its
+  own database.
+- **Rationale:** Cheap to honour now and impossible to repair later — the same reasoning as the
+  ethics gate in ADR-013. Being able to state that the analysis dataset contained only participant
+  responses is a precondition for trusting any result in Ch.4.
+- **Trade-off:** Loses the convenience of pre-existing data while developing. Acceptable; the seed
+  script recreates the app catalogue in seconds.
+- **Status:** Decided.
 
 ---
 

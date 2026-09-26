@@ -29,7 +29,9 @@ authorised.** No survey data may be collected until Phase 9 completes.
 | 5 | Survey module (consent + SUS + storage) | Yes | 🟢 **Verified** — defects fixed, flow tested |
 | 6 | Weighted ranking algorithm | Yes | 🟢 **Verified** — 24 tests passing |
 | 7 | Recommendation engine (condition matching) | Yes | 🟡 Runs correctly; needs MARS data to be meaningful |
-| 8 | Results / recommendation UI | Yes | 🟡 Scaffold created (Vite + React + TS) |
+| 8a | **Participant survey UI** (consent → SUS → ranking → debrief) | Yes | 🟢 **Verified end to end** |
+| 8b | Results / recommendation UI | Yes | ⬜ Not started |
+| 8c | Admin MARS-entry UI | Yes | ⬜ Deferred by design (ADR-016) |
 | 9 | **Ethics approval** (blocking) | No | 🔴 Not started |
 | 10 | Run survey with 30–50 participants | No | ⛔ Blocked by Phase 9 |
 | 11 | Validation analysis (C6) | Light | ⬜ Not started |
@@ -39,15 +41,16 @@ authorised.** No survey data may be collected until Phase 9 completes.
 
 **Legend:** 🟢 Verified (actually exercised) · 🟡 Implemented or partial · 🔴 Needs work · ⛔ Blocked · ⬜ Not started
 
-**👉 Currently working on:** Building the **Phase 8 survey UI**. Backend is verified as of
-24 Sep 2026 — 24 unit tests passing and the full participant flow exercised end to end
-(see [`PROJECT.md`](./PROJECT.md) §6b).
+**👉 Current state:** the **participant survey flow is complete and verified end to end** — consent
+through to debrief, with progress persisted server-side so a refresh resumes rather than restarts
+(see [`PROJECT.md`](./PROJECT.md) §6b and §6d).
 
 **Priorities in order:**
 1. 🔴 **Submit the ethics summary + form** — blocks the entire survey, and carries 20% of the grade
-2. 🟠 **Survey UI** (consent → condition → SUS → ranking → done)
+2. 🟠 **Pilot the flow yourself**, then wipe `dev.db` and re-seed (ADR-018)
 3. 🟠 **MARS-score the apps** — without it, 60% of every recommendation score is missing
-4. 🟠 **Start Ch.2 and the entrepreneurial-value analysis** — 20% of the grade, needs no code
+4. 🟠 **Results / recommendation UI** — needed for C6 and the recorded demo
+5. 🟠 **Start Ch.2 and the entrepreneurial-value analysis** — 20% of the grade, needs no code
 
 > ⚠️ Earlier revisions of this file described the backend as "feature-complete" and the algorithm as
 > "unit-tested" before either was true. Both are now accurate, but the status vocabulary stays
@@ -57,10 +60,15 @@ authorised.** No survey data may be collected until Phase 9 completes.
 
 ### Before collecting real data
 
-Three blockers recorded in [`PROJECT.md`](./PROJECT.md) §6c:
+Recorded in [`PROJECT.md`](./PROJECT.md) §6c:
+- ⛔ **Ethics approval** — no recruitment before it is granted (ADR-013)
+- **Align the consent and debrief wording** in `web/src/content/consent.ts` and `DonePage.tsx` with the approved application — both are currently marked DRAFT
 - **Wipe `dev.db` and re-seed** — it currently holds manual test responses (ADR-018)
 - **Populate `storeUrl`, version and date checked** for all 18 apps — participants cannot try an app the survey never locates
 - **Settle the missing-data eligibility rule** — apps with no MARS or SUS data are currently still ranked, scored as 0 (ADR-017)
+- **Fill in `web/.env.example`** — committed empty; should declare `VITE_API_BASE_URL`
+- **Remove the "Start a new response" link** on the debrief page so one person cannot submit repeatedly
+- **Consider schema validation** at the API boundary — a field-name mismatch already caused a runtime crash on the SUS page (ADR-024)
 
 ---
 

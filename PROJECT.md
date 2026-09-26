@@ -153,7 +153,9 @@ exists and compiles; it does **not** imply it has been tested.
 | 5 | Survey module (consent + SUS + storage) | Yes | 🟢 **Verified** — defects fixed, full participant flow exercised end to end (§6b) |
 | 6 | Weighted ranking algorithm | Yes | 🟢 **Verified** — 24 unit tests passing; SUS score confirmed over HTTP |
 | 7 | Recommendation engine (condition matching) | Yes | 🟡 Verified as *running*; output not yet meaningful without MARS data. "Personalisation" is still condition filtering only |
-| 8 | Results / recommendation UI | Yes | 🟡 In progress — Vite + React + TS scaffold created |
+| 8a | **Participant survey UI** (consent → condition → SUS → ranking → debrief) | Yes | 🟢 **Implemented and walked end to end** (26 Sep) — consent copy still DRAFT pending ethics |
+| 8b | Results / recommendation UI | Yes | 🔴 Not started — needed for C6 and the recorded demo |
+| 8c | Admin MARS-entry UI | Yes | ⬜ Deliberately deferred — MARS can be entered via the API; a UI earns no marks (ADR-016) |
 | 9 | **Ethics approval** (blocking gate) | No | 🔴 **Not started — blocks Phase 10** |
 | 10 | Run survey with 30–50 participants | No | ⛔ Blocked by Phase 9 |
 | 11 | Validation analysis (C6) | Light | 🔴 Not started — capture endpoint now exists (§6b) |
@@ -220,7 +222,7 @@ observed in responses — supporting evidence for C9 (professionalism).
 
 ### 6c. Open issues surfaced by verification
 
-Three issues that verification exposed. None is a code defect; all three affect research validity.
+Four issues that verification exposed. None is a code defect; all four affect research validity.
 
 1. **Test data is mixed into the development database.** Recommendation output showed 2 SUS
    responses for apps that received only 1 during the scripted run, meaning earlier manual test
@@ -231,12 +233,48 @@ Three issues that verification exposed. None is a code defect; all three affect 
    survey never locates. Each app record needs a store URL, the **version evaluated**, and the
    **date checked** — required both for the participant task and for reproducibility, since these
    apps change frequently (already on the risk register).
-3. **Missing MARS data caps every recommendation at 0.4 and still ranks unevaluated apps.**
+3. **`web/.env.example` was committed empty.** It should declare
+   `VITE_API_BASE_URL=http://localhost:4000`. The committed example file is how anyone cloning the
+   repository — including an examiner reproducing the work — discovers which variables exist.
+   Note that `VITE_`-prefixed variables are compiled into the public bundle, so this file must never
+   hold secrets; that distinction differs from `server/.env` and is worth stating in the write-up.
+4. **Missing MARS data caps every recommendation at 0.4 and still ranks unevaluated apps.**
    With `wMars = 0.6` and no MARS evaluations, 60% of every score is structurally absent, so the
    top-ranked app scored `0.39` of a possible `1.0`. Worse, an app with *neither* MARS nor SUS data
    (HealthifyMe) was still ranked, scored as `0`. This is ADR-017 confirmed empirically: it
    elevates Phase 2 (MARS scoring) from routine work to **the blocker on the recommendation engine
    producing meaningful output at all**, and it needs an explicit eligibility rule.
+
+### 6d. Frontend verification record — 26 Sep 2026
+
+The participant flow was walked end to end against the live API and confirmed in the database.
+Further evidence for criterion C3.
+
+| Check | Result |
+|-------|--------|
+| Consent screen blocks submission until the agreement box is ticked | ✅ |
+| Direct navigation to `/condition` without consenting | ✅ Recovery prompt, not a crash |
+| Session creation assigns 5 randomised T2DM apps | ✅ |
+| SUS form refuses submission with fewer than ten answers | ✅ |
+| Progress advances app-by-app to completion | ✅ |
+| **Mid-survey page refresh retains position** | ✅ Server-derived progress (ADR-019) |
+| Direct navigation to `/rank` with apps unanswered | ✅ Redirects back to the questionnaire |
+| Ranking submits and the session is marked `completed` | ✅ Confirmed in Prisma Studio |
+| `AppPreference` row written with the chosen order | ✅ This is the C6 comparison data |
+| `npx tsc -b` | ✅ Clean |
+
+**Two defects were found and fixed during this work, both invisible to the dev server:**
+
+1. **An API field-name mismatch** — the frontend type declared `completedAppdIds` while the server
+   sends `completedAppIds`. `tsc` passed because the type and the code consuming it agreed with each
+   other; only the runtime disagreed, and it surfaced on the SUS page. See **ADR-024** — the concrete
+   argument for adding schema validation at the API boundary.
+2. **A closure-narrowing error** in `ConditionPage`, where a null-check could not be carried into a
+   hoisted function declaration. Caught by `npx tsc -b`, never by `npm run dev`.
+
+**Process lesson for Ch.3:** `npm run dev` does **not** type-check — Vite strips types without
+verifying them. Type checking is a separate, deliberate step, and both defects above prove the
+distinction matters in the data-collection path.
 
 ---
 
@@ -274,6 +312,9 @@ Three issues that verification exposed. None is a code defect; all three affect 
 | **Test data contaminating the real dataset** | Confirmed present | High | 🔴 | Wipe `dev.db` and re-seed before collection; keep test and live databases separate (§6c.1) |
 | **Recommendations meaningless until MARS data exists** | Certain | High | 🔴 | Phase 2 elevated to top technical priority; 60% of each score is absent without it (§6c.3) |
 | **Apps with no data still appear in rankings** | Confirmed | Medium | 🟡 | Define an eligibility rule per ADR-017; report insufficient-data apps separately rather than scoring them 0 |
+| **Unvalidated API responses fail only at runtime** | Occurred once | High | 🟠 | Error boundary contains the damage (ADR-023); add schema validation at the boundary before recruitment (ADR-024) |
+| **UI crash silently ends a participant's session** | Was certain | High | ✅ Mitigated | Error boundary shows a recovery card and answers persist server-side (ADR-019, ADR-023). Crashes are still not logged anywhere durable |
+| **Unmodified default ranking may not be a real preference** | Medium | Medium | 🟡 | Initial order is randomised so bias is not systematic (ADR-021); consider recording whether the order was changed, and report as a limitation |
 | **Participants cannot locate the apps to try** | Confirmed | High | 🔴 | Populate `storeUrl`, version evaluated, and date checked for all 18 apps before the survey (§6c.2) |
 | **Write-up compressed by continued development** | High | Critical | 🔴 | Hard freeze mid-Nov; 6 of 10 criteria need no further code |
 | Presentation recording missed by 13 Jan | Low | High | 🟡 | Non-submission = 0 for that component; schedule the recording in December |

@@ -44,6 +44,18 @@ persists to a relational database via Prisma.
 ## 2. Component Responsibilities
 
 ### 2.1 Frontend (React SPA)
+
+> **Build status, 26 Sep 2026.** The **survey** area below is built and verified end to end. The
+> **public results** area and the **admin** area are *proposed, not built* — the admin MARS form is
+> deliberately deferred because MARS can be entered through the API and a UI for it earns no marks
+> (ADR-016). Implemented structure: `web/src/{api,components,content,pages}`.
+>
+> Two departures from the original plan, both deliberate:
+> - Survey progress is **derived from server state**, not held in the client, so a refresh resumes
+>   rather than restarts (ADR-019).
+> - Preference ranking uses **arrow buttons, not drag-and-drop**, for keyboard and touch
+>   accessibility (ADR-020).
+
 Three route areas:
 
 - **Public (`/`)** — project explanation, condition picker, and the recommendation results page
@@ -56,10 +68,21 @@ Three route areas:
   (23 items) → CSV export. Gated by JWT stored in memory (+ refresh strategy TBD).
 
 ### 2.2 Backend (Express, TypeScript)
-Layered: `routes → controllers → services → prisma`. Cross-cutting middleware:
-- **Validation** — `zod` schemas on every request body/params.
-- **Auth guard** — verifies JWT for `/admin/*` and any write to MARS/config.
-- **Error handler** — consistent JSON error shape `{ error: { code, message, details? } }`.
+
+> **Build status, 26 Sep 2026.** What exists is `routes → lib/scoring → prisma`. There is **no
+> controller or service layer**, **no `zod`**, and **no central error handler** — each route handles
+> its own validation and returns the error shape itself. The layering below remains the target, not
+> a description of the code.
+
+**Proposed** layering: `routes → controllers → services → prisma`. Cross-cutting middleware:
+- **Validation** — `zod` schemas on every request body/params. _(Not implemented. Validation is
+  currently hand-written per route; it is authoritative and tested — see ADR-007 — but not
+  schema-driven. ADR-024 records why schema validation matters at the **client** boundary too.)_
+- **Auth guard** — verifies JWT for admin routes and any write to MARS/config. _(Implemented as
+  `middleware/authGuard.ts`.)_
+- **Error handler** — consistent JSON error shape `{ error: { message, details? } }`.
+  _(The **shape** is used consistently and the frontend relies on `details` to report per-item SUS
+  validation failures, but it is produced per route rather than by shared middleware.)_
 
 ### 2.3 Database
 See `DATABASE_SCHEMA.md`. Prisma provides type-safe models + migrations and lets us target
@@ -225,4 +248,12 @@ exports (Python/SPSS) initially; a `/api/validation` endpoint can be added later
   package.json (workspaces) or separate per package
 ```
 
-> This layout is a proposal for the scaffolding phase (Phase 4), not yet created.
+> **Status, 26 Sep 2026.** Partly built, and the tree above is still partly aspirational. Actually
+> present: `server/src/{routes,lib/scoring,middleware,types}`, `server/prisma/`, and
+> `web/src/{api,components,content,pages}`. The Prisma client is generated into
+> `server/src/generated/` and is gitignored, so `prisma generate` must be run after cloning.
+>
+> Not present: `server/src/controllers`, `server/src/services`, `server/tests/` (the tests live
+> beside the code as `src/lib/scoring/*.test.ts`), `web/src/hooks/`, and npm workspaces — `server/`
+> and `web/` are independent packages, each with its own `package.json`, installed and run
+> separately.

@@ -333,6 +333,139 @@ here rather than silently edited, so the reasoning trail stays honest.
 
 ---
 
+# Frontend decisions (Phase 8, 26 Sep 2026)
+
+Decisions taken while building the participant-facing survey UI
+(`web/`: Vite + React + TypeScript + Tailwind v4 + React Router).
+
+## ADR-019 — Survey progress is derived from server state, not client state
+
+- **Context:** A participant answers a 10-item SUS questionnaire for each of 3–5 apps in one
+  sitting. The UI must know which app to show next.
+- **Problem:** The obvious approach is a client-side counter (`currentAppIndex`). But a refresh, an
+  accidental back-navigation, a flat battery, or a dropped connection would reset it — and the
+  participant would either re-answer apps they had already rated or abandon the survey. Both
+  outcomes damage the dataset, and "low survey response rate" is already the top risk on the
+  register.
+- **Decision:** The client holds **no progress state**. `GET /api/survey/sessions/:id` returns the
+  assigned apps in stored presentation order plus `completedAppIds`, and the UI renders the first
+  app not in that list. Each SUS response is persisted immediately on submission rather than being
+  batched to the end.
+- **Rationale:** The server is the single source of truth, so progress survives anything that
+  happens to the browser. Reloading the same URL resumes exactly where the participant was. This
+  also means the ranking page can bounce anyone who reaches it early (`remainingCount > 0`) back to
+  the questionnaire, and the completion endpoint can refuse to finish a partial session — the same
+  invariant enforced in three places from one piece of data.
+- **Trade-off:** One extra HTTP request after each submission to refresh progress. Negligible
+  against the cost of losing a participant mid-survey.
+- **Status:** Implemented and manually verified — a mid-survey refresh retains position.
+
+## ADR-020 — Preference ranking uses arrow buttons, not drag-and-drop
+
+- **Context:** Participants must place the apps they tried in their own order of preference. This
+  ordering is the comparison data for Objective 5 / criterion C6.
+- **Options considered:** (a) drag-and-drop, (b) up/down arrow buttons, (c) a rank number per app
+  via dropdowns.
+- **Decision:** Up/down arrow buttons, with `aria-label` on each control and the boundary buttons
+  disabled.
+- **Rationale:** Drag-and-drop is the most visually appealing option and the worst on the criteria
+  that matter here: it is difficult with a keyboard, unreliable on touch screens, and a known
+  barrier for less confident and older users. **In a study whose subject is usability, an
+  inaccessible ranking control would undermine the study's own premise** — a participant who cannot
+  operate the control does not produce a missing data point, they produce a *wrong* one. Option (c)
+  invites duplicate or missing ranks, which the API rejects anyway (see ADR-010), producing avoidable
+  errors. Arrow buttons also add no dependency.
+- **Trade-off:** Reordering a long list takes more clicks. Irrelevant at 3–5 items.
+- **Related:** The reorder is animated via the View Transitions API with feature detection, and
+  honours `prefers-reduced-motion`. Motion is never mandatory — unrequested animation can cause
+  discomfort for some users, which would be a poor fit for this study in particular.
+- **Status:** Implemented.
+
+## ADR-021 — Ranking starts in the randomised presentation order
+
+- **Context:** The ranking screen must show the apps in *some* initial order before the participant
+  rearranges them.
+- **Problem:** Whatever order is shown acts as an anchor. Some participants will submit without
+  changing it, so the initial order partly becomes the measurement.
+- **Decision:** Seed the list with the session's stored presentation order, which the server already
+  randomises per session using Fisher–Yates (ADR-010).
+- **Rationale:** The anchor cannot be removed, but it can be made **random across participants**
+  rather than systematic. Any residual anchoring then adds noise instead of bias, which is the
+  defensible position.
+- **Open question for the supervisor:** a participant can submit an unmodified order. That may be a
+  genuine preference or disengagement, and the two are currently indistinguishable. Recording
+  whether the order was modified would allow this to be reported as a limitation. **Not yet
+  implemented.**
+- **Status:** Implemented; the accompanying measurement question is open.
+
+## ADR-022 — SUS item order is load-bearing and lives in a content module
+
+- **Context:** The SUS score depends on item position: odd items are positively worded and
+  contribute `answer − 1`, even items are negatively worded and contribute `5 − answer` (ADR-009).
+- **Problem:** In the UI the ten items are just an array. Reordering it — a change that looks purely
+  cosmetic — would silently invert half the contributions and corrupt every subsequent score. No
+  test or type would catch it, because the array would still be valid.
+- **Decision:** Keep the items in `web/src/content/sus.ts` with an explicit warning comment that the
+  order is not cosmetic, and derive the answer-key type from the array so the keys cannot drift from
+  the API payload.
+- **Rationale:** The risk is not that the code is wrong today but that a future reasonable-looking
+  edit makes it wrong. Putting the constraint next to the data is the cheapest durable guard.
+  Participant-facing copy also belongs outside JSX so that wording approved by the ethics committee
+  can be changed in one file without touching layout — the same reasoning applies to the consent
+  text.
+- **Trade-off:** Order is enforced by a comment rather than by code. A stronger guard would be a
+  test asserting the tone of each position; worth adding if the instrument is ever edited.
+- **Status:** Implemented.
+
+## ADR-023 — Error boundary so a UI crash cannot end a participant's session
+
+- **Context:** "Platform bugs during live survey" is a red-flagged risk. During development, a
+  single undefined property in one component produced a **completely blank page**.
+- **Problem:** React unmounts the whole tree when a render throws. A participant would see a white
+  screen, have no idea their earlier answers were saved, and simply leave. The failure is also
+  silent — nothing reaches the researcher.
+- **Decision:** Wrap the application in an `ErrorBoundary` that renders a recovery card with a
+  reload button, placed outside the router so routing errors are caught too.
+- **Rationale:** Crashes cannot be prevented by intention alone, so the design must fail visibly and
+  recoverably rather than invisibly and terminally. The fallback can honestly state that previous
+  answers are saved **because** progress is persisted server-side (ADR-019) — one decision making
+  another one's guarantee possible.
+- **Trade-off:** Must be a class component; React provides no hook equivalent. It also currently only
+  logs to the console, so a crash during a real session leaves no durable record. Logging failures
+  server-side would be a sensible addition before recruitment.
+- **Status:** Implemented.
+
+## ADR-024 — Runtime validation is missing at the API boundary
+
+- **Context:** The typed API client uses generics (`request<T>`) so each endpoint returns a precise
+  type. The final step is `return body as T` — a **cast**, not a check.
+- **Incident that exposed this (26 Sep 2026).** The frontend type declared `completedAppdIds` while
+  the server sends `completedAppIds`. Because the interface and the component that consumed it
+  agreed with *each other*, `tsc` reported no error. The dev server also reported nothing, because
+  Vite strips types without checking them. The failure only appeared at runtime, as
+  `Cannot read properties of undefined`, **on the SUS page — the screen that collects the study's
+  primary data.** Diagnosis took several rounds and was only settled by logging the raw response
+  body and comparing it to the interface character by character.
+- **Root cause:** TypeScript verifies code against declared types. It never verifies declared types
+  against what the server actually sends. A typed client therefore gives *confidence* about the API
+  contract without giving *evidence* for it.
+- **Decision (proposed):** Validate responses at the boundary with a schema library (Zod is already
+  named in `ARCHITECTURE.md`), so a mismatch fails immediately, names the offending field, and can
+  be surfaced as a handled error rather than a crash.
+- **Interim mitigations, in force now:**
+  1. Copy field names directly from a real `curl` response rather than typing them by hand.
+  2. Run `npx tsc -b` when behaviour is unexpected — it catches the class of error the dev server
+     hides, and it did find a genuine narrowing bug in `ConditionPage` in the same session.
+  3. The error boundary (ADR-023) contains the damage if a mismatch reaches production.
+- **Why this is worth writing up:** it is a concrete, dated example of a real limitation of static
+  typing in a data-collection path, with an identified remedy — more defensible in Ch.3 than a
+  textbook assertion that "types improve reliability".
+- **Trade-off:** Schema validation duplicates the shape definition and adds a dependency and a small
+  runtime cost. Justified for endpoints that carry research data; arguably unnecessary elsewhere.
+- **Status:** Proposed. Not implemented — recommended before recruitment.
+
+---
+
 ## Open questions / to confirm with supervisor
 
 _Process now confirmed (briefing 18 Sep 2026): one-page research summary → correct form →

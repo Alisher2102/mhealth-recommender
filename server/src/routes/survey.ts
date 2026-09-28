@@ -295,7 +295,7 @@ surveyRouter.post(
       console.error("Failed to record skipped app", err);
       return res
         .status(500)
-        .json({ error: { messaage: "Failed to record your choice" } });
+        .json({ error: { message: "Failed to record your choice" } });
     }
   },
 );

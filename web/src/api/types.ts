@@ -27,6 +27,7 @@ export interface SessionDetail {
   status: string;
   apps: MhealthApp[];
   completedAppIds: string[];
+  skippedAppIds: string[];
   remainingCount: number;
 }
 

@@ -9,6 +9,7 @@ import LikertScale from "../components/LikertScale";
 export default function SusPage() {
   const { sessionId = "" } = useParams();
 
+  const [skipping, setSkipping] = useState(false);
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Partial<SusAnswers>>({});
@@ -49,13 +50,16 @@ export default function SusPage() {
     );
   }
   const currentApp = session.apps.find(
-    (app) => !session.completedAppIds.includes(app.id),
+    (app) =>
+      !session.completedAppIds.includes(app.id) &&
+      !session.skippedAppIds.includes(app.id),
   );
   if (!currentApp) {
     return <Navigate to={`/survey/${sessionId}/rank`} replace />;
   }
 
-  const answeredCount = session.completedAppIds.length;
+  const handledCount =
+    session.completedAppIds.length + session.skippedAppIds.length;
   const allAnswered = SUS_KEYS.every((key) => answers[key] !== undefined);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -87,12 +91,33 @@ export default function SusPage() {
       setSubmitting(false);
     }
   }
+  async function handleSkip() {
+    if (!currentApp || submitting || skipping) return;
+
+    setSkipping(true);
+    setError(null);
+
+    try {
+      await surveyApi.skipApp(sessionId, currentApp.id);
+      setAnswers({});
+      await loadSession();
+      window.scrollTo({ top: 0 });
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Could not record your choice.",
+      );
+    } finally {
+      setSkipping(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <p className="text-sm font-medium text-slate-500">
-          App {answeredCount + 1} of {session.apps.length}
+          App {handledCount + 1} of {session.apps.length}
         </p>
+
         <div className="mt-3 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <h1 className="text-2xl font-semibold text-slate-900">
             {currentApp.name}
@@ -152,6 +177,14 @@ export default function SusPage() {
             className="mt-6 w-full rounded-md bg-slate-900 px-4 py-3 font-medium text-white disabled:bg-slate-300"
           >
             {submitting ? "Saving..." : "Save and continue"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSkip}
+            disabled={submitting || skipping}
+            className="mt-3 w-full rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+          >
+            {skipping ? "Recording…" : "I would rather not rate this app"}
           </button>
         </form>
       </div>

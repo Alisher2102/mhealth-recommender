@@ -464,6 +464,53 @@ Decisions taken while building the participant-facing survey UI
   runtime cost. Justified for endpoints that carry research data; arguably unnecessary elsewhere.
 - **Status:** Proposed. Not implemented — recommended before recruitment.
 
+## ADR-025 — Participants decline a whole application rather than omit individual items
+
+- **Context:** The APU Fast Track ethics screening asks (Q6) whether participants will be given the
+  option of omitting questions they do not want to answer. A "No" routes the application to Full
+  Track.
+- **Problem:** The SUS form required **all ten items** — a partial response cannot be scored against
+  the validated instrument (ADR-009), so items cannot simply be made optional. Worse, the consent
+  screen already promised *"you do not have to answer any question you would rather skip"*, which was
+  **untrue** for the questionnaire. The study was therefore about to declare a protection it did not
+  provide.
+- **Options considered:**
+  1. Allow individual SUS items to be skipped — invalidates the instrument, or silently discards
+     responses the participant believes they submitted.
+  2. Remove the promise and answer Q6 "No" — honest, but routes the study to Full Track.
+  3. **Allow a participant to decline an entire application** and continue.
+- **Decision:** Option 3. The ten items remain mandatory *within* an application; the alternative
+  offered is to decline that application in full. Nothing presented to a participant is compulsory.
+- **Rationale:** This is the only option that keeps the instrument valid, keeps the Q6 answer
+  truthful, and removes a false promise from the consent screen. It also reflects the real objection a
+  participant is likely to have — *"I don't want to rate this app"* — rather than the artificial one
+  of objecting to item 7 of 10.
+- **Implementation consequences, all deliberate:**
+  - Declines are recorded **server-side** (`SurveySession.skippedAppIds`), so progress stays derived
+    from the server and a refresh cannot resurrect a declined application (ADR-019).
+  - The skip endpoint returns `409` if the application already has a response, so a participant can
+    never appear to have both rated and refused the same app.
+  - Session completion accepts every assigned app being **either rated or declined**.
+  - Preference ranking validates against **rated** apps, not assigned apps. Without this change a
+    participant who declined an app could never submit a valid ranking and would be trapped on the
+    final screen — the ranking endpoint would reject every ordering they could produce.
+  - A session with fewer than two rated apps skips ranking entirely: a one-item ordering carries no
+    information for a rank correlation.
+- **Consequences for analysis, to address in Ch.3 and Ch.4:**
+  - Sessions with fewer than two rated applications produce **no preference data** and must be
+    excluded from the Spearman comparison. The exclusion count should be reported rather than left
+    implicit.
+  - Rankings now vary in length between participants. The correlation is computed per session over
+    that session's rated set, so this is handled, but it must be stated.
+  - **The decline rate is itself a finding.** An application declined unusually often may be
+    signalling something about its store listing or presentation, and is worth reporting alongside
+    the SUS scores rather than discarding.
+- **Trade-off:** fewer ratings per session, and unequal data across participants. Accepted: a forced
+  response is worse data than an absent one, and a study that promises a protection it does not
+  deliver is indefensible regardless of the statistics.
+- **Status:** Implemented and verified — declining advances the counter, the ranking page shows only
+  rated apps, and `AppPreference.rankedAppIds` records the reduced set.
+
 ---
 
 ## Open questions / to confirm with supervisor

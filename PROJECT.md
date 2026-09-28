@@ -263,6 +263,19 @@ Further evidence for criterion C3.
 | `AppPreference` row written with the chosen order | ✅ This is the C6 comparison data |
 | `npx tsc -b` | ✅ Clean |
 
+**Decline flow added and verified 28 Sep 2026** (ADR-025), so that the ethics declaration about
+omitting questions is true in the software:
+
+| Check | Result |
+|-------|--------|
+| Declining an app advances the progress counter | ✅ |
+| Declined app is not shown again after a refresh | ✅ Recorded server-side |
+| Skipping an app that already has a response | ✅ Rejected with `409` |
+| Ranking page lists only the apps actually rated | ✅ |
+| `AppPreference.rankedAppIds` holds the reduced set | ✅ Verified in Prisma Studio |
+| Fewer than two rated apps bypasses ranking | ✅ |
+| `npm run typecheck` (server) and `npx tsc -b` (web) | ✅ Clean |
+
 **Two defects were found and fixed during this work, both invisible to the dev server:**
 
 1. **An API field-name mismatch** — the frontend type declared `completedAppdIds` while the server

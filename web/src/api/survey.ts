@@ -41,4 +41,9 @@ export const surveyApi = {
     api.patch<CompleteSessionResponse>(
       `/api/survey/sessions/${sessionId}/complete`,
     ),
+  skipApp: (sessionId: string, appId: string) =>
+    api.post<{ sessionId: string; skippedAppIds: string[] }>(
+      `/api/survey/sessions/${sessionId}/skip`,
+      { appId },
+    ),
 };

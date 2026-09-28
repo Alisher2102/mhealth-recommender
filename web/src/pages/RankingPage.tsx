@@ -19,7 +19,11 @@ export default function RankingPage() {
     try {
       const data = await surveyApi.getSession(sessionId);
       setSession(data);
-      setOrdered(data.apps);
+      // Only rated apps can be ranked -- a declined app has no rating to compare
+      // against, and the server rejects a ranking that includes one.
+      setOrdered(
+        data.apps.filter((app) => data.completedAppIds.includes(app.id)),
+      );
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Could not load your survey.",
@@ -63,10 +67,14 @@ export default function RankingPage() {
     setError(null);
 
     try {
-      await surveyApi.savePreferences(
-        sessionId,
-        ordered.map((app) => app.id),
-      );
+      // A ranking needs at least two items to carry any information, and a
+      // one-item ordering contributes nothing to the rank correlation.
+      if (ordered.length >= 2) {
+        await surveyApi.savePreferences(
+          sessionId,
+          ordered.map((app) => app.id),
+        );
+      }
       await surveyApi.completeSession(sessionId);
       sessionStorage.removeItem("participantId");
       navigate("/done", { replace: true });
@@ -98,6 +106,35 @@ export default function RankingPage() {
   if (session.remainingCount > 0) {
     return <Navigate to={`/survey/${sessionId}`} replace />;
   }
+  // Fewer than two rated apps: there is nothing meaningful to rank.
+  if (ordered.length < 2) {
+    return (
+      <Centered>
+        <h1 className="text-xl font-semibold text-slate-900">Almost done</h1>
+        <p className="mt-3 text-slate-600">
+          You rated {ordered.length} app
+          {ordered.length === 1 ? "" : "s"}, so there is nothing to put in
+          order. Thank you for taking part.
+        </p>
+        {error && (
+          <p
+            role="alert"
+            className="mt-4 rounded-md bg-red-50 p-3 text-red-700"
+          >
+            {error}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="mt-6 w-full rounded-md bg-slate-900 px-4 py-3 font-medium text-white disabled:bg-slate-300"
+        >
+          {submitting ? "Finishing…" : "Finish the survey"}
+        </button>
+      </Centered>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
@@ -106,8 +143,8 @@ export default function RankingPage() {
           Last step: put the apps in your order of preference
         </h1>
         <p className="mt-2 text-slate-600">
-          Place the app you would most recommend at the top. Use the arrows to
-          move each app up or down.
+          Place the app you would most recommend at the top. Only the apps you
+          rated are shown. Use the arrows to move each app up or down.
         </p>
 
         {error && (

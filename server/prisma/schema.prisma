@@ -104,6 +104,7 @@ model SurveySession {
   presentationOrder String          // JSON string[]
   status            String          @default("in_progress")
   startedAt         DateTime        @default(now())
+  skippedAppIds     String          @default("[]")  
   completedAt       DateTime?
   susResponses      SusResponse[]
   preferences       AppPreference[]

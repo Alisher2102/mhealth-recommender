@@ -170,6 +170,7 @@ surveyRouter.get(
         .filter((a): a is (typeof apps)[number] => a !== undefined);
 
       const completedAppIds = session.susResponses.map((r) => r.appId);
+      const skippedAppIds: string[] = JSON.parse(session.skippedAppIds);
 
       return res.json({
         sessionId: session.id,
@@ -177,7 +178,9 @@ surveyRouter.get(
         status: session.status,
         apps: ordered,
         completedAppIds,
-        remainingCount: ordered.length - completedAppIds.length,
+        skippedAppIds,
+        remainingCount:
+          ordered.length - completedAppIds.length - skippedAppIds.length,
       });
     } catch (err) {
       console.error("Failed to load session", err);
@@ -242,6 +245,60 @@ surveyRouter.post(
   },
 );
 
+surveyRouter.post(
+  "/survey/sessions/:id/skip",
+  async (req: Request, res: Response) => {
+    try {
+      const sessionId = req.params.id;
+      const { appId } = req.body ?? {};
+
+      const session = await prisma.surveySession.findUnique({
+        where: { id: sessionId },
+        include: { susResponses: { select: { appId: true } } },
+      });
+      if (!session) {
+        return res
+          .status(404)
+          .json({ error: { message: "Survey session not found" } });
+      }
+      if (typeof appId !== "string") {
+        return res
+          .status(400)
+          .json({ error: { message: "appId is required" } });
+      }
+      const assigned: string[] = JSON.parse(session.assignedAppIds);
+      if (!assigned.includes(appId)) {
+        return res.status(400).json({
+          error: {
+            message: "This app is not part of the current survey session",
+          },
+        });
+      }
+
+      if (session.susResponses.some((r) => r.appId === appId)) {
+        return res.status(409).json({
+          error: {
+            message: "This app already has a response and cannot be declined",
+          },
+        });
+      }
+      const skipped: string[] = JSON.parse(session.skippedAppIds);
+      if (!skipped.includes(appId)) {
+        skipped.push(appId);
+        await prisma.surveySession.update({
+          where: { id: sessionId },
+          data: { skippedAppIds: JSON.stringify(skipped) },
+        });
+      }
+      return res.status(201).json({ sessionId, skippedAppIds: skipped });
+    } catch (err) {
+      console.error("Failed to record skipped app", err);
+      return res
+        .status(500)
+        .json({ error: { message: "Failed to record your choice" } });
+    }
+  },
+);
 /**
  * Records the participant's own preference ordering of the apps they tried.
  *
@@ -279,32 +336,35 @@ surveyRouter.post(
       }
 
       const assigned: string[] = JSON.parse(session.assignedAppIds);
+      const skipped: string[] = JSON.parse(session.skippedAppIds);
+      // Only apps the participant actually rated can be ranked -- ranking a
+      // declined app would be meaningless, and the system ranking it is
+      // compared against is built from rated apps.
+      const rankable = assigned.filter((id) => !skipped.includes(id));
 
-      // Every ranked app must belong to this session, or the ranking cannot be
-      // compared against the system ranking for the same app set.
-      const unknown = rankedAppIds.filter((id) => !assigned.includes(id));
+      const unknown = rankedAppIds.filter((id) => !rankable.includes(id));
       if (unknown.length > 0) {
         return res.status(400).json({
           error: {
-            message: "rankedAppIds contains apps not assigned to this session",
+            message:
+              "rankedAppIds contains apps not available to rank in this session",
             details: unknown,
           },
         });
       }
 
-      // Reject duplicates: a ranking with repeats is not a valid ordering.
       if (new Set(rankedAppIds).size !== rankedAppIds.length) {
-        return res
-          .status(400)
-          .json({ error: { message: "rankedAppIds must not contain duplicates" } });
-      }
-
-      // Require a complete ranking. A partial ordering would make the rank
-      // correlation ambiguous, so it is rejected rather than silently padded.
-      if (rankedAppIds.length !== assigned.length) {
         return res.status(400).json({
           error: {
-            message: `rankedAppIds must rank all ${assigned.length} assigned apps`,
+            message: "rankedAppIds must not contain duplicates",
+          },
+        });
+      }
+
+      if (rankedAppIds.length !== rankable.length) {
+        return res.status(400).json({
+          error: {
+            message: `rankedAppIds must rank all ${rankable.length} rated apps`,
           },
         });
       }
@@ -358,13 +418,18 @@ surveyRouter.patch(
       }
 
       const assigned: string[] = JSON.parse(session.assignedAppIds);
-      if (session.susResponses.length < assigned.length) {
+      const skipped: string[] = JSON.parse(session.skippedAppIds);
+      const handled = session.susResponses.length + skipped.length;
+
+      if (handled < assigned.length) {
         return res.status(409).json({
           error: {
-            message: "Cannot complete: not all assigned apps have a SUS response",
+            message:
+              "Cannot complete: some assigned apps are neither rated nor declined",
             details: {
               expected: assigned.length,
-              received: session.susResponses.length,
+              rated: session.susResponses.length,
+              declined: skipped.length,
             },
           },
         });

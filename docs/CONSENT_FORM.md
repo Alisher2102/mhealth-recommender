@@ -46,16 +46,16 @@ to take part.
 
 | | Statement |
 |---|---|
-| 1 | I confirm that I am **18 years of age or older**. |
+| 1 | I confirm that I am **18 years of age or older** and resident in Malaysia. |
 | 2 | I have read and understood the **Participant Information Sheet** (version 1.0) for this study, and I have had the opportunity to consider the information. |
 | 3 | I understand that my participation is **voluntary**, and that I am free to stop at any time, without giving a reason and without any consequence. |
-| 4 | I understand that I do **not** have to answer any question I would prefer to skip. |
-| 5 | I understand what I am being asked to do: to look at the publicly available listings of three to five mobile health applications and answer ten short questions about each, then place them in my order of preference. |
+| 4 | I understand that the background questions are optional, and that if I would rather not rate a particular application I may **decline that application** and continue. |
+| 5 | I understand what I am being asked to do: to look at the publicly available listings of three to five mobile health applications and answer ten short questions about each, then place the ones I rated in my order of preference. |
 | 6 | I understand that I am **not** required to install any application, create any account, make any payment, or enter any personal or health information into any application, and that I should **not** enter real personal or health information into any third-party application as part of this study. |
 | 7 | I understand that **no name, email address, telephone number, address or other identifying detail** is collected, and that my answers are stored against a randomly generated code. |
 | 8 | I understand that the background questions about age, gender and whether I manage a long-term health condition are **optional**, and that I may select "prefer not to say". |
 | 9 | I understand that because no identifying information is collected, **once I submit my answers they cannot be traced back to me and therefore cannot be removed on request**, and that I may stop at any time before submitting. |
-| 10 | I understand that my answers will be used for a Master's dissertation and possibly a subsequent academic publication, and that results will be reported **only as group findings**, never individually. |
+| 10 | I understand that my answers will be used **solely for a Master's dissertation** and for no other purpose, and that results will be reported **only as group findings**, never individually. |
 | 11 | I agree to take part in this study. |
 
 ---

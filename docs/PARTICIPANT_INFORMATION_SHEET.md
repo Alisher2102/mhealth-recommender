@@ -40,8 +40,8 @@ system's rankings match what real people actually prefer.
 
 ## 3. Why have I been invited?
 
-You have been invited because you are an adult aged 18 or over who is able to look at an
-application and give an opinion on how easy it appears to use.
+You have been invited because you are an adult aged 18 or over, resident in Malaysia, who is able to
+look at an application and give an opinion on how easy it appears to use.
 
 **You do not need to have any health condition to take part**, and you are not being invited because
 of your health. This is a study about how usable software appears, not a medical study.
@@ -53,8 +53,10 @@ No. Participation is completely voluntary.
 - You may decide not to start.
 - You may stop at any point, without giving a reason and without any consequence. Simply close the
   browser window.
-- You may skip any question you would rather not answer. The two background questions default to
+- The background questions about age, gender and health condition are **optional** and default to
   "prefer not to say".
+- If you would rather not rate a particular application, you may **decline that application** and
+  move on. Nothing you are shown is compulsory.
 
 ## 5. What will I be asked to do?
 
@@ -67,7 +69,8 @@ The whole task takes approximately **10–15 minutes**:
 4. For each one, look at its publicly available store listing and description, then answer **ten
    short questions** about how easy it appears to use. Each is answered on a five-point scale from
    "strongly disagree" to "strongly agree".
-5. Finally, place the applications in your own order of preference.
+5. If you would prefer not to rate one of them, you may decline it and continue to the next.
+6. Finally, place the applications you rated in your own order of preference.
 
 **Please note:** you are **not** asked to install anything, create an account, make any payment, or
 enter any personal or health information into any of these applications. You are only asked to look
@@ -120,8 +123,9 @@ identifying information is collected at any stage, the researcher cannot tell wh
 yours.
 
 - Only the researcher has access to the response data. The supervisor may review summary results.
-- The data are used solely for this dissertation and any academic publication arising from it, always
-  as group results.
+- The data are used **solely for this Master's dissertation** and for no other purpose. They will not
+  be reused for any later study, shared with any third party, or passed to any commercial
+  organisation.
 - The data are kept until the dissertation has been assessed and any appeal period has closed, after
   which they are deleted. _[Confirm retention period with supervisor.]_
 
@@ -140,9 +144,9 @@ _[supervisor contact]_
 
 ## 11. What happens to the results?
 
-The results form part of a Master's dissertation submitted to Asia Pacific University, and may be
-included in a subsequent academic publication. All results are reported as group findings. No
-individual response is reported or published.
+The results form part of a Master's dissertation submitted to Asia Pacific University for assessment.
+They are used for that academic purpose only. All results are reported as group findings; no
+individual response is reported.
 
 ## 12. Who is organising this study?
 

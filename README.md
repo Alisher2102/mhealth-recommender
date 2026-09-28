@@ -66,6 +66,7 @@ Recorded in [`PROJECT.md`](./PROJECT.md) §6c:
 - **Wipe `dev.db` and re-seed** — it currently holds manual test responses (ADR-018)
 - **Populate `storeUrl`, version and date checked** for all 18 apps — participants cannot try an app the survey never locates
 - **Settle the missing-data eligibility rule** — apps with no MARS or SUS data are currently still ranked, scored as 0 (ADR-017)
+- **Decide how declined apps are reported** — sessions with fewer than two rated apps yield no ranking and must be excluded from the Spearman comparison; the decline rate per app is itself a finding (ADR-025)
 - **Fill in `web/.env.example`** — committed empty; should declare `VITE_API_BASE_URL`
 - **Remove the "Start a new response" link** on the debrief page so one person cannot submit repeatedly
 - **Consider schema validation** at the API boundary — a field-name mismatch already caused a runtime crash on the SUS page (ADR-024)

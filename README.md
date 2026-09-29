@@ -30,7 +30,7 @@ authorised.** No survey data may be collected until Phase 9 completes.
 | 6 | Weighted ranking algorithm | Yes | 🟢 **Verified** — 24 tests passing |
 | 7 | Recommendation engine (condition matching) | Yes | 🟡 Runs correctly; needs MARS data to be meaningful |
 | 8a | **Participant survey UI** (consent → SUS → ranking → debrief) | Yes | 🟢 **Verified end to end** |
-| 8b | Results / recommendation UI | Yes | ⬜ Not started |
+| 8b | Results / recommendation UI | Yes | 🟢 **Verified** — honest when data is insufficient |
 | 8c | Admin MARS-entry UI | Yes | ⬜ Deferred by design (ADR-016) |
 | 9 | **Ethics approval** (blocking) | No | 🔴 Not started |
 | 10 | Run survey with 30–50 participants | No | ⛔ Blocked by Phase 9 |

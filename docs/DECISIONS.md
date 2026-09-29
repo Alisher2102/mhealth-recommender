@@ -520,6 +520,43 @@ Decisions taken while building the participant-facing survey UI
 - **Status:** Implemented and verified — declining advances the counter, the ranking page shows only
   rated apps, and `AppPreference.rankedAppIds` records the reduced set.
 
+## ADR-026 — Suppress the top recommendation when no application is confident
+
+- **Context:** `rankApps` sets `topRecommendation` to the first app that is not `lowConfidence`, and
+  falls back to `scored[0]` when no such app exists. Because absent MARS and SUS values are coerced
+  to `0` before weighting (the policy problem recorded in ADR-017), that fallback can be an
+  application holding **no measurements at all** — as observed with HealthifyMe, which ranked while
+  having neither a MARS evaluation nor a single SUS response.
+- **Problem:** rendering that app beneath a heading reading "Top recommendation" would assert
+  something the data cannot support. It is the presentational form of the same error as treating
+  "not measured" as "measured as worst": an absence is dressed up as a finding. In a study whose
+  stated contribution is *evidence-based* recommendation, that would undermine the central claim.
+- **Decision:** the results page computes whether **every** app in the ranking is `lowConfidence`. If
+  so it suppresses the top-pick card entirely and shows an explicit notice that the ranking is
+  displayed for transparency and should not be read as a recommendation. The ranking itself is still
+  shown, with a per-row low-confidence marker.
+- **Secondary decision:** each input is displayed **separately** — MARS, SUS, and the combined score —
+  rather than the combined score alone. A missing measurement renders as "not evaluated" rather than
+  as a number. This matters acutely while MARS data does not exist: with `wMars = 0.6`, every
+  combined score is structurally capped at `0.4`, and a reader shown only the total would reasonably
+  read a low number as a poor app rather than an unmeasured one.
+- **Rationale:** the honest default when data is insufficient is to say so, not to present the
+  least-bad option. Showing the ranking anyway preserves transparency, and the computation panel
+  displays the live weights and threshold so the algorithm is inspectable rather than a black box
+  during the viva.
+- **Limitation, stated plainly:** this is a **presentational** mitigation. The API still returns a
+  zero-data application as `topRecommendation`, so any other consumer of that endpoint would be
+  misled. The durable fix is the eligibility rule proposed in ADR-017 — excluding applications below
+  a data threshold from ranking altogether, rather than filtering at the point of display.
+- **Trade-off:** a visitor may see no recommendation at all. Correct for now: there genuinely isn't
+  one until MARS evaluation (Phase 2) is done. The notice makes that gap visible rather than
+  disguising it.
+- **Deliberately omitted:** interactive weight controls. The endpoint is entered when *either* weight
+  is supplied but validated as though *both* were (defect M1, §6e), so passing one produces a
+  misleading error. Worth adding for the sensitivity-analysis demo once M1 is fixed.
+- **Status:** Implemented and verified — with no MARS data the notice appears, no top-pick card is
+  shown, and every row is marked low confidence with MARS reading "not evaluated".
+
 ---
 
 ## Open questions / to confirm with supervisor

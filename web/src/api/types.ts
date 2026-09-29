@@ -61,3 +61,26 @@ export interface CompleteSessionResponse {
   status: string;
   completedAt: string | null;
 }
+
+export interface RankedApp {
+  appId: string;
+  name: string;
+  marsNorm: number | null;
+  susNorm: number | null;
+  score: number;
+  rank: number;
+  lowConfidence: boolean;
+  reason: string;
+}
+
+export interface RecommendationConfig {
+  wMars: number;
+  wSus: number;
+  minSusResponses: number;
+}
+
+export interface RecommendationResult {
+  config: RecommendationConfig;
+  ranking: RankedApp[];
+  topRecommendation: RankedApp | null;
+}

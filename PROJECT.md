@@ -154,7 +154,7 @@ exists and compiles; it does **not** imply it has been tested.
 | 6 | Weighted ranking algorithm | Yes | 🟢 **Verified** — 24 unit tests passing; SUS score confirmed over HTTP |
 | 7 | Recommendation engine (condition matching) | Yes | 🟡 Verified as *running*; output not yet meaningful without MARS data. "Personalisation" is still condition filtering only |
 | 8a | **Participant survey UI** (consent → condition → SUS → ranking → debrief) | Yes | 🟢 **Implemented and walked end to end** (26 Sep) — consent copy still DRAFT pending ethics |
-| 8b | Results / recommendation UI | Yes | 🔴 Not started — needed for C6 and the recorded demo |
+| 8b | Results / recommendation UI | Yes | 🟢 **Implemented and verified** (ADR-026) — suppresses the top pick when no app has sufficient data; weight controls deferred pending defect M1 |
 | 8c | Admin MARS-entry UI | Yes | ⬜ Deliberately deferred — MARS can be entered via the API; a UI earns no marks (ADR-016) |
 | 9 | **Ethics approval** (blocking gate) | No | 🔴 **Not started — blocks Phase 10** |
 | 10 | Run survey with 30–50 participants | No | ⛔ Blocked by Phase 9 |
@@ -293,7 +293,7 @@ the unit tests, because all of them are logic or contract issues rather than typ
 
 | # | Defect | Effect |
 |---|--------|--------|
-| M4 | `topRecommendation` falls back to `scored[0]` when no app is confident | With no MARS data the headline recommendation can be an app with **no MARS and no SUS at all**. ADR-017 covers the ranking policy but not this top-pick fallback |
+| M4 | `topRecommendation` falls back to `scored[0]` when no app is confident | With no MARS data the headline recommendation can be an app with **no MARS and no SUS at all**. **Mitigated in the UI only** (ADR-026): the results page suppresses the top-pick card when every app is low confidence. The API still returns the zero-data app, so the durable fix remains the ADR-017 eligibility rule |
 | M1 | Weight override is entered when *either* weight is present but validated as if *both* are | `?wMars=0.7` alone yields a 400 whose message does not describe the real problem |
 | M3 | Weights read from `AlgorithmConfig` are used unnormalised, unlike query weights | A stored config such as `0.7/0.5` silently produces `score > 1.0`, breaking the 0–1 scale ADR-011 exists to create. Nothing enforces `wMars + wSus = 1` |
 | M2 | The SUS aggregation has no `where` clause | Every SUS row in the database feeds the mean, including abandoned sessions and residual test data. This is the code-level cause of the contamination in §6c.1; wiping `dev.db` (ADR-018) treats the symptom only |

@@ -26,6 +26,22 @@ function shuffle<T>(input: T[]): T[] {
   }
   return arr;
 }
+/**
+ * A completed session must stop accepting writes, or `status` and `completedAt`
+ * cannot serve as the analysis-eligibility criterion they exist for.
+ */
+function rejectIfNotInProgress(
+  session: { status: string },
+  res: Response,
+): boolean {
+  if (session.status !== "in_progress") {
+    res.status(409).json({
+      error: { message: "This survey session is already complete" },
+    });
+    return true;
+  }
+  return false;
+}
 
 surveyRouter.post("/participants", async (req: Request, res: Response) => {
   try {
@@ -206,6 +222,7 @@ surveyRouter.post(
           .status(404)
           .json({ error: { message: "Survey session not found" } });
       }
+      if (rejectIfNotInProgress(session, res)) return;
       if (typeof appId !== "string") {
         return res
           .status(400)
@@ -216,6 +233,15 @@ surveyRouter.post(
         return res.status(400).json({
           error: {
             message: "This app is not part of the current survey session",
+          },
+        });
+      }
+
+      const skippedIds: string[] = JSON.parse(session.skippedAppIds);
+      if (skippedIds.includes(appId)) {
+        return res.status(409).json({
+          error: {
+            message: "This app was declined and cannot now be rated",
           },
         });
       }
@@ -261,6 +287,8 @@ surveyRouter.post(
           .status(404)
           .json({ error: { message: "Survey session not found" } });
       }
+      if (rejectIfNotInProgress(session, res)) return;
+
       if (typeof appId !== "string") {
         return res
           .status(400)
@@ -325,7 +353,7 @@ surveyRouter.post(
           .status(404)
           .json({ error: { message: "Survey session not found" } });
       }
-
+      if (rejectIfNotInProgress(session, res)) return;
       if (
         !Array.isArray(rankedAppIds) ||
         !rankedAppIds.every((id) => typeof id === "string")
@@ -416,7 +444,7 @@ surveyRouter.patch(
           .status(404)
           .json({ error: { message: "Survey session not found" } });
       }
-
+      if (rejectIfNotInProgress(session, res)) return;
       const assigned: string[] = JSON.parse(session.assignedAppIds);
       const skipped: string[] = JSON.parse(session.skippedAppIds);
       const handled = session.susResponses.length + skipped.length;

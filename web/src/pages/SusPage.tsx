@@ -5,7 +5,6 @@ import { ApiError } from "../api/client";
 import type { SessionDetail, SusAnswers } from "../api/types";
 import { SUS_ITEMS, SUS_KEYS } from "../content/sus";
 import LikertScale from "../components/LikertScale";
-
 export default function SusPage() {
   const { sessionId = "" } = useParams();
 

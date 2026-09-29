@@ -4,6 +4,7 @@ import type {
   Condition,
   CreateParticipantResponse,
   CreateSessionResponse,
+  RecommendationResult,
   SavePreferencesResponse,
   SessionDetail,
   SubmitSusResponse,
@@ -45,5 +46,9 @@ export const surveyApi = {
     api.post<{ sessionId: string; skippedAppIds: string[] }>(
       `/api/survey/sessions/${sessionId}/skip`,
       { appId },
+    ),
+  getRecommendations: (condition: Condition) =>
+    api.get<RecommendationResult>(
+      `/api/recommendations?condition=${condition}`,
     ),
 };

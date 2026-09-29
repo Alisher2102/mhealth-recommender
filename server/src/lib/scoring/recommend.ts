@@ -58,14 +58,14 @@ export function rankApps(
       susNorm === null;
     const reasonParts: string[] = [];
     if (marsNorm === null) reasonParts.push("no MARS evaluation");
-    if (susNorm === null) reasonParts.push("No SUS evaluation");
+    if (susNorm === null) reasonParts.push("no SUS evaluation");
     else if (app.susCount < config.minSusResponses)
       reasonParts.push(`only ${app.susCount} SUS response(s)`);
 
     const reason =
       reasonParts.length > 0
         ? `Low confidence: ${reasonParts.join(", ")}.`
-        : `MARS ${app.marsTotal}/5 and mean SUS ${app.susMean}/100 combined with weights` +
+        : `MARS ${app.marsTotal}/5 and mean SUS ${app.susMean}/100 combined with weights ` +
           `${config.wMars}/${config.wSus}.`;
     return {
       appId: app.appId,

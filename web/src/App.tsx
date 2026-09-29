@@ -4,6 +4,7 @@ import ConditionPage from "./pages/ConditionPage";
 import SusPage from "./pages/SusPage";
 import RankingPage from "./pages/RankingPage";
 import DonePage from "./pages/DonePage";
+import ResultsPage from "./pages/ResultsPage";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/survey/:sessionId/rank" element={<RankingPage />} />
       <Route path="/done" element={<DonePage />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/results" element={<ResultsPage />} />
     </Routes>
   );
 }

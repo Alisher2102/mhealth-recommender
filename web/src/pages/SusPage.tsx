@@ -6,7 +6,6 @@ import type { SessionDetail, SusAnswers } from "../api/types";
 import { SUS_ITEMS, SUS_KEYS } from "../content/sus";
 import LikertScale from "../components/LikertScale";
 export default function SusPage() {
-  // throw new Error("test");
   const { sessionId = "" } = useParams();
 
   const [skipping, setSkipping] = useState(false);

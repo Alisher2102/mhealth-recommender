@@ -276,6 +276,44 @@ omitting questions is true in the software:
 | Fewer than two rated apps bypasses ranking | ✅ |
 | `npm run typecheck` (server) and `npx tsc -b` (web) | ✅ Clean |
 
+### 6e. Open defects — code review, 29 Sep 2026
+
+A systematic review before starting the results UI. None of these was found by the type checker or
+the unit tests, because all of them are logic or contract issues rather than type errors.
+
+**Critical**
+
+| # | Defect | Effect |
+|---|--------|--------|
+| C1 | `ErrorBoundary` was never built, though three documents claimed it was | Blank page on any render throw; false claim now corrected in ADR-023, ADR-024 and the risk register |
+| C2 | `POST /sus` validates against `assignedAppIds` but never checks `skippedAppIds` | An app can be both rated **and** declined. `remainingCount` then double-subtracts and can go negative, the completion guard double-counts so a session can be marked `completed` with untouched apps, and `rankable` excludes an app the ranking page still shows — stranding the participant on the final screen. Not reachable through the normal UI, but reachable from two tabs, a retried request, or any direct call to these unauthenticated endpoints. Contradicts the guarantee stated in ADR-025 |
+| C3 | No write endpoint reads `SurveySession.status` | A `completed` session still accepts SUS rows, skips and revised rankings, and `PATCH /complete` can be replayed, overwriting `completedAt`. A marker that keeps changing cannot serve as the analysis-eligibility criterion its own comment claims |
+
+**Moderate — affects the results UI**
+
+| # | Defect | Effect |
+|---|--------|--------|
+| M4 | `topRecommendation` falls back to `scored[0]` when no app is confident | With no MARS data the headline recommendation can be an app with **no MARS and no SUS at all**. ADR-017 covers the ranking policy but not this top-pick fallback |
+| M1 | Weight override is entered when *either* weight is present but validated as if *both* are | `?wMars=0.7` alone yields a 400 whose message does not describe the real problem |
+| M3 | Weights read from `AlgorithmConfig` are used unnormalised, unlike query weights | A stored config such as `0.7/0.5` silently produces `score > 1.0`, breaking the 0–1 scale ADR-011 exists to create. Nothing enforces `wMars + wSus = 1` |
+| M2 | The SUS aggregation has no `where` clause | Every SUS row in the database feeds the mean, including abandoned sessions and residual test data. This is the code-level cause of the contamination in §6c.1; wiping `dev.db` (ADR-018) treats the symptom only |
+
+**Moderate — before data collection**
+
+| # | Defect | Effect |
+|---|--------|--------|
+| M5 | `AppPreference` has no `@@unique([sessionId])` | The `findFirst`-then-create emulation is not atomic, so concurrent submissions can create the duplicate rows the route's own comment says it prevents |
+| M7 | `seed.ts` deletes apps but not `susResponse` / `surveySession` / `participant` | `prisma db seed` fails with a foreign-key error once any survey data exists. The ADR-018 wipe-and-reseed workflow only works if `dev.db` is deleted first |
+| M8 | No app CRUD endpoints exist, despite being listed in `ARCHITECTURE.md` and MVP scope | There is no way to populate `storeUrl`, `versionEvaluated` or `lastUpdatedOn` except editing the seed file — which M7 makes awkward. The participant-facing effect is already visible as "No store link recorded for this app yet" |
+| M6 | `MarsEvaluation.appId` is `@unique`, and the MARS route upserts on it | One evaluation per app, ever, with a second rater silently overwriting the first. The schema has already answered the "single rater or inter-rater reliability" question that §9.3 still lists as open |
+| M9 | No 404 or error-handling middleware, and `client.ts` parses JSON unguarded | An HTML error body throws a raw `SyntaxError` rather than an `ApiError`, so every page falls back to its generic message and the real status is lost |
+
+**Minor**
+
+- `recommend.ts` — missing space in the confident reason string: *"combined with weights0.6/0.4"*.
+- `recommend.ts` — inconsistent capitalisation: *"no MARS evaluation"* against *"No SUS evaluation"*.
+  Both strings are participant- and demo-facing.
+
 **Two defects were found and fixed during this work, both invisible to the dev server:**
 
 1. **An API field-name mismatch** — the frontend type declared `completedAppdIds` while the server
@@ -325,8 +363,8 @@ distinction matters in the data-collection path.
 | **Test data contaminating the real dataset** | Confirmed present | High | 🔴 | Wipe `dev.db` and re-seed before collection; keep test and live databases separate (§6c.1) |
 | **Recommendations meaningless until MARS data exists** | Certain | High | 🔴 | Phase 2 elevated to top technical priority; 60% of each score is absent without it (§6c.3) |
 | **Apps with no data still appear in rankings** | Confirmed | Medium | 🟡 | Define an eligibility rule per ADR-017; report insufficient-data apps separately rather than scoring them 0 |
-| **Unvalidated API responses fail only at runtime** | Occurred once | High | 🟠 | Error boundary contains the damage (ADR-023); add schema validation at the boundary before recruitment (ADR-024) |
-| **UI crash silently ends a participant's session** | Was certain | High | ✅ Mitigated | Error boundary shows a recovery card and answers persist server-side (ADR-019, ADR-023). Crashes are still not logged anywhere durable |
+| **Unvalidated API responses fail only at runtime** | Occurred once | High | 🔴 | **No mitigation in place.** The error boundary named in ADR-024 is not implemented; add it, then schema validation at the boundary before recruitment |
+| **UI crash silently ends a participant's session** | Confirmed | High | 🔴 **Open** | Previously recorded as mitigated. A review on 29 Sep 2026 found the error boundary was never built (ADR-023), so a render throw still blanks the page. Answers do persist server-side (ADR-019), but the participant is not told that and has no recovery route |
 | **Unmodified default ranking may not be a real preference** | Medium | Medium | 🟡 | Initial order is randomised so bias is not systematic (ADR-021); consider recording whether the order was changed, and report as a limitation |
 | **Participants cannot locate the apps to try** | Confirmed | High | 🔴 | Populate `storeUrl`, version evaluated, and date checked for all 18 apps before the survey (§6c.2) |
 | **Write-up compressed by continued development** | High | Critical | 🔴 | Hard freeze mid-Nov; 6 of 10 criteria need no further code |

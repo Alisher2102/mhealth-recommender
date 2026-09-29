@@ -430,10 +430,16 @@ Decisions taken while building the participant-facing survey UI
   recoverably rather than invisibly and terminally. The fallback can honestly state that previous
   answers are saved **because** progress is persisted server-side (ADR-019) — one decision making
   another one's guarantee possible.
-- **Trade-off:** Must be a class component; React provides no hook equivalent. It also currently only
-  logs to the console, so a crash during a real session leaves no durable record. Logging failures
+- **Trade-off:** Must be a class component; React provides no hook equivalent. It will also only log
+  to the console, so a crash during a real session leaves no durable record. Logging failures
   server-side would be a sensible addition before recruitment.
-- **Status:** Implemented.
+- **Status:** ⚠️ **NOT IMPLEMENTED.** This entry previously read "Implemented"; a review on
+  29 Sep 2026 found no `ErrorBoundary` component anywhere in `web/`, and `main.tsx` renders
+  `StrictMode > BrowserRouter > App` with nothing else. The status was recorded before the component
+  was built and was never verified.
+  **The blank-page risk this ADR exists to close is therefore still open**, on the data-collection
+  path. Build it before recruitment, or the mitigation cited by ADR-024 and by the risk register does
+  not exist.
 
 ## ADR-024 — Runtime validation is missing at the API boundary
 
@@ -456,7 +462,10 @@ Decisions taken while building the participant-facing survey UI
   1. Copy field names directly from a real `curl` response rather than typing them by hand.
   2. Run `npx tsc -b` when behaviour is unexpected — it catches the class of error the dev server
      hides, and it did find a genuine narrowing bug in `ConditionPage` in the same session.
-  3. The error boundary (ADR-023) contains the damage if a mismatch reaches production.
+  3. ~~The error boundary (ADR-023) contains the damage if a mismatch reaches production.~~
+     **Not available** — the error boundary is not implemented (see ADR-023). A response-shape
+     mismatch currently blanks the page, which is exactly how the `completedAppdIds` defect
+     presented.
 - **Why this is worth writing up:** it is a concrete, dated example of a real limitation of static
   typing in a data-collection path, with an identified remedy — more defensible in Ch.3 than a
   textbook assertion that "types improve reliability".

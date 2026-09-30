@@ -417,8 +417,10 @@ distinction matters in the data-collection path.
 - [ ] **Participant population.** "General adults" vs. actual chronic-disease patients are
       materially different populations with different review requirements. Must be declared
       honestly — population cannot be reframed merely to avoid review.
-- [ ] **MARS evaluator protocol.** Single rater, or multiple raters with inter-rater reliability?
-      Affects whether scores may be described as "expert".
+- [x] **MARS evaluator protocol.** Resolved: **single rater**, no second rater available. Documented
+      in `docs/MARS_SCORING_PROTOCOL.md`, with test–retest on ~5 apps as the reliability substitute.
+      Scores must therefore be described as **"researcher-rated", not "expert-validated"**.
+      Confirm the design with the supervisor before scoring begins.
 - [ ] **Weighting justification.** 0.6 MARS / 0.4 SUS needs literature support + sensitivity
       analysis before it can be presented as a contribution.
 - [ ] **Final title.** Currently 15 words; confirm wording and hyphen counting.

@@ -570,8 +570,11 @@ substantive, not procedural._
   if the study genuinely recruits people managing chronic conditions, it must say so.
 - **Supervisor meeting count** — briefing says ≥3, the logsheet template says 6. Assume 6.
 - **Is click-through electronic consent acceptable**, and what audit evidence is required?
-- **MARS evaluator protocol** — single rater or multiple with inter-rater reliability? Determines
-  whether the scores can legitimately be called "expert".
+- ~~**MARS evaluator protocol** — single rater or multiple with inter-rater reliability?~~
+  **Resolved:** single rater (no second rater available), with test–retest on ~5 apps as the
+  reliability substitute. See `docs/MARS_SCORING_PROTOCOL.md`. Consequence: the scores are
+  **"researcher-rated", not "expert-validated"**, and no inter-rater reliability can be reported.
+  Still to confirm with the supervisor.
 - **Missing-data eligibility rule** for ranking (ADR-017).
 - Weight justification for the recommendation algorithm (0.6 MARS / 0.4 SUS) — needs literature
   backing + a sensitivity analysis.

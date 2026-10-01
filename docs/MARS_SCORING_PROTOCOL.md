@@ -105,7 +105,71 @@ applications are not yet scored so the work can be done in batches.
 a version-controlled file makes the dataset reviewable and the import repeatable, where equivalent
 `curl` commands would leave the scores only in shell history.
 
-## 7. What goes into the thesis
+## 7. Application set, inclusion and exclusions
+
+### Inclusion criteria
+
+An application was included if it:
+
+1. targets self-management of type 2 diabetes, hypertension, or a chronic respiratory condition;
+2. is **available in the Malaysian App Store**, matching the recruitment population;
+3. is obtainable and usable without a mandatory upfront payment.
+
+**Availability verification.** Each application in the final set was **downloaded on a Malaysian App
+Store account during the evaluation period (30 September – 1 October 2026)**. Store links are
+recorded in the Malaysian storefront accordingly. This satisfies criterion 2: an application a
+Malaysian participant cannot obtain could not be part of the task.
+
+**Platform.** All assessments are **iOS**. Android versions were not evaluated. Android-only
+applications were therefore never in scope, and this is a stated limitation — findings describe the
+iOS versions assessed, not the applications in general.
+
+### Final set — 14 applications
+
+| Condition | Count |
+|---|---|
+| Type 2 diabetes | 6 |
+| Hypertension | 4 |
+| COPD / respiratory | 4 |
+
+Each category retains at least three applications, which is the minimum a survey session requires.
+
+> **Note for Chapter 3:** with four applications in the hypertension and COPD categories, a session's
+> "random subset of 3–5" becomes **all four** of them. Presentation order is still randomised, but
+> *which* applications a participant sees is not a random sample in those two categories — it is a
+> census. This must be described accurately rather than as random sampling.
+
+### Exclusion log
+
+| Application | Condition | Reason | Date | Replaced? |
+|---|---|---|---|---|
+| Cardilog: High Blood Pressure | Hypertension | Payment required before any use, no free trial — could not be meaningfully assessed | 1 Oct 2026 | No |
+| MyHeart: Blood Pressure Diary | Hypertension | Could not be assessed reliably | 1 Oct 2026 | No |
+
+Neither was replaced: the hypertension category retains four applications, comfortably above the
+minimum of three, and substituting would have required re-running the selection search rather than
+choosing a convenient alternative.
+
+> Both applications were initially scored before being excluded. Those scores were uniform across all
+> 19 objective items — a pattern that reflects an inability to assess the application rather than a
+> genuine rating — which is what prompted the exclusion. The scores were discarded rather than
+> retained.
+
+### ⚠️ Still to record: the selection search
+
+The provisional shortlist drafted during planning was **replaced during the actual store search**, so
+the selection process itself is not yet documented. Before writing Chapter 3, record:
+
+- which store(s) and storefront were searched;
+- the exact search terms used per condition;
+- the date of the search;
+- how the result lists were reduced to the final set (e.g. top *n* results, relevance screening);
+- how many applications were screened in total.
+
+Without this, the application set cannot be shown to be systematically selected rather than
+convenient. This is the open item behind Phase 1 being marked *provisional*.
+
+## 8. What goes into the thesis
 
 - The instrument, its citation, and the fact that scoring followed the published anchor descriptors.
 - The single-rater design, stated as a limitation, with the test–retest agreement reported.

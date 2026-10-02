@@ -23,16 +23,35 @@ chapters/
 
 ## Setting it up in Overleaf
 
-### Option A — sync from GitHub (recommended)
+### Option A — upload a ZIP (free, recommended)
 
-Overleaf can pull directly from this repository, so the template stays
-version-controlled alongside the code and nothing passes through a clipboard.
-In Overleaf: **New Project → Import from GitHub**.
+Overleaf's GitHub sync requires a paid plan, but uploading a ZIP does not — and
+a ZIP transfers the bytes exactly, so nothing can be corrupted on the way.
 
-### Option B — upload
+From the repository root, after pulling:
 
-Download the `docs/thesis-template/` folder and upload it as a new Overleaf
-project, preserving the `chapters/` subfolder.
+```powershell
+Compress-Archive -Path docs/thesis-template/* -DestinationPath thesis-template.zip
+```
+
+Then in Overleaf: **New Project → Upload Project** and select the ZIP.
+
+Using `/*` zips the *contents* rather than the folder, so `main.tex` sits at the
+archive root where Overleaf expects it, with `chapters/` preserved beneath it.
+
+### Option B — copy from a local editor
+
+Clipboard copying is only a hazard when the text passes through something that
+interprets backslash escapes. Copying from a plain-text editor into Overleaf is
+safe. Open the files locally and paste them in, recreating the `chapters/`
+folder.
+
+### Keeping the repository copy current
+
+Without paid sync there is no automatic path back. Periodically use Overleaf's
+**Menu → Download → Source** to get a ZIP, and commit its contents over
+`docs/thesis-template/`. That keeps the dissertation under version control
+alongside the code without a subscription.
 
 ### Required settings
 

@@ -1,0 +1,241 @@
+% ============================================================
+%  MSc Dissertation - Asia Pacific University
+%  Project Paper (122026-RJD)
+%
+%  COMPILER:     pdfLaTeX (default) or XeLaTeX
+%  BIBLIOGRAPHY: Biber -- NOT BibTeX. Set it in Overleaf:
+%                Menu -> Compiler / Bibliography -> Biber
+%                biblatex-apa requires Biber.
+%
+%  Formatting follows the APU Thesis/Dissertation Handbook v2.0:
+%    margins L 3cm, R 2cm, T/B 2.5cm; Times 12pt; 1.5 spacing;
+%    page numbers centred at the foot; Roman front matter, Arabic body;
+%    chapters on new pages; bold non-underlined headings, max 4 levels;
+%    table captions above, figure captions below, numbered by chapter;
+%    APA author-date referencing.
+%
+%  Verify every one of those against the Word template before submitting.
+% ============================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ---------- Page geometry ----------
+\usepackage[a4paper, left=3cm, right=2cm, top=2.5cm, bottom=2.5cm]{geometry}
+
+% ---------- Font: Times-metric ----------
+% For literal Times New Roman, switch the compiler to XeLaTeX and replace the
+% line below with:
+%   \usepackage{fontspec}
+%   \setmainfont{TeX Gyre Termes}
+\usepackage{newtxtext,newtxmath}
+
+% ---------- 1.5 line spacing ----------
+\usepackage{setspace}
+\onehalfspacing
+
+% ---------- Headings ----------
+\usepackage{titlesec}
+\setcounter{secnumdepth}{3}   % chapter + 3 numbered levels = 4 total
+\setcounter{tocdepth}{3}
+
+% "CHAPTER 1" centred on its own line, title centred in capitals below.
+\titleformat{\chapter}[display]
+  {\centering\normalfont\bfseries\large}
+  {\MakeUppercase{\chaptertitlename}\ \thechapter}
+  {12pt}
+  {\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{0pt}{30pt}
+
+% Heading text begins 1.27cm from the left margin. The number sits in a
+% fixed-width box, so the text aligns regardless of the number's width.
+\titleformat{\section}[hang]
+  {\normalfont\bfseries\large}{\makebox[1.27cm][l]{\thesection}}{0pt}{}
+\titleformat{\subsection}[hang]
+  {\normalfont\bfseries\normalsize}{\makebox[1.27cm][l]{\thesubsection}}{0pt}{}
+% 2.1.1 is wider than 2.1, so this box is wider.
+\titleformat{\subsubsection}[hang]
+  {\normalfont\bfseries\normalsize}{\makebox[1.6cm][l]{\thesubsubsection}}{0pt}{}
+
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+\titlespacing*{\subsubsection}{0pt}{12pt}{6pt}
+
+% ---------- Page numbers centred at the foot ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+% Chapter opening pages use the "plain" style, so it needs the same footer.
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+% ---------- Tables and figures ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\counterwithin{table}{chapter}
+\counterwithin{figure}{chapter}
+\captionsetup{font=normalsize, labelfont=bf,
+              justification=raggedright, singlelinecheck=false}
+
+% ---------- APA referencing ----------
+% csquotes must be loaded BEFORE biblatex.
+\usepackage{csquotes}
+\usepackage[style=apa, backend=biber, sortcites=true]{biblatex}
+\DeclareLanguageMapping{english}{american-apa}
+\addbibresource{references.bib}
+
+% hyperref is loaded last by convention.
+\usepackage[hidelinks]{hyperref}
+
+% ---------- Centred, unnumbered front-matter heading ----------
+% The table-of-contents entry is added BEFORE the heading so the recorded page
+% number and the hyperlink target are both correct.
+\newcommand{\frontheading}[1]{%
+  \clearpage
+  \phantomsection
+  \addcontentsline{toc}{chapter}{#1}%
+  \begin{center}
+    \normalfont\bfseries\large\MakeUppercase{#1}
+  \end{center}
+  \vspace{1em}%
+}
+
+\begin{document}
+
+% ============================================================
+%  PRELIMINARY MATTER -- Roman numerals
+% ============================================================
+\pagenumbering{roman}
+
+% ---------- Title page ----------
+\begin{titlepage}
+\centering
+\vspace*{1cm}
+
+{\large\bfseries A COMPARATIVE EVALUATION AND INTELLIGENT RECOMMENDATION
+SYSTEM FOR MOBILE HEALTH APPLICATIONS IN CHRONIC DISEASE SELF-MANAGEMENT\par}
+
+\vspace{2.5cm}
+{\large BY\par}
+\vspace{0.5cm}
+{\large\bfseries [YOUR FULL NAME]\par}
+\vspace{0.5cm}
+{\large [STUDENT ID]\par}
+
+\vspace{2.5cm}
+{\large A dissertation submitted in partial fulfilment of the requirements
+for the degree of\par}
+\vspace{0.5cm}
+{\large\bfseries MASTER OF SCIENCE IN SOFTWARE ENGINEERING\par}
+
+\vspace{2cm}
+{\large School of Computing\par}
+{\large Asia Pacific University of Technology \& Innovation\par}
+
+\vspace{1cm}
+{\large [MONTH] [YEAR]\par}
+\end{titlepage}
+
+% ---------- Declarations ----------
+% Confirm the exact required wording against the Word template.
+\frontheading{Declaration of Originality}
+I hereby declare that this dissertation is my own work, that all sources used
+have been acknowledged, and that it has not previously been submitted for any
+other award.
+
+\vspace{1.5cm}
+\noindent Signature: \hrulefill\\[0.8cm]
+\noindent Name: [YOUR FULL NAME]\\[0.5cm]
+\noindent Date: \hrulefill
+
+\frontheading{Supervisor's Declaration}
+I confirm that this dissertation has been carried out under my supervision and
+is submitted with my approval.
+
+\vspace{1.5cm}
+\noindent Signature: \hrulefill\\[0.8cm]
+\noindent Name: [SUPERVISOR NAME]\\[0.5cm]
+\noindent Date: \hrulefill
+
+\frontheading{Confidentiality Declaration}
+This dissertation contains no confidential or restricted material.
+% If restricted, state the classification and the permitted duration. The
+% handbook gives two years in one place and three in another -- confirm which
+% applies with your supervisor.
+
+% ---------- Abstract ----------
+% 300-500 words. ONE paragraph. No citations, no subheadings. Written LAST.
+\frontheading{Abstract}
+[ABSTRACT TEXT]
+
+\frontheading{Acknowledgements}
+[OPTIONAL]
+
+% ---------- Contents and lists ----------
+\tableofcontents
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\frontheading{List of Abbreviations}
+\begin{tabbing}
+\hspace{3.5cm}\=\kill
+\textbf{COPD} \> Chronic Obstructive Pulmonary Disease\\
+\textbf{IRR} \> Inter-Rater Reliability\\
+\textbf{MARS} \> Mobile App Rating Scale\\
+\textbf{mHealth} \> Mobile Health\\
+\textbf{SUS} \> System Usability Scale\\
+\textbf{T2DM} \> Type 2 Diabetes Mellitus\\
+\end{tabbing}
+
+% ============================================================
+%  BODY -- Arabic numerals, restarting at 1
+% ============================================================
+\clearpage
+\pagenumbering{arabic}
+
+\input{chapters/ch1-introduction}
+\input{chapters/ch2-literature-review}
+\input{chapters/ch3-methodology}
+\input{chapters/ch4-results-discussion}
+\input{chapters/ch5-conclusion}
+
+% ============================================================
+%  REFERENCES -- APA, alphabetical, hanging indent, double-spaced
+% ============================================================
+\begin{spacing}{2}
+\printbibliography[title={REFERENCES}, heading=bibintoc]
+\end{spacing}
+
+% ============================================================
+%  APPENDICES
+%  \appendix switches \chaptertitlename to "Appendix", so the heading
+%  renders as "APPENDIX A" and chapters are lettered.
+% ============================================================
+\appendix
+
+\chapter{Research Ethics Approval}
+% COMPULSORY section. Include the approved form and the research summary.
+
+\chapter{Participant Information Sheet and Consent Form}
+
+\chapter{MARS Scoring Data}
+
+\chapter{Supervisory Logsheets}
+% Consecutively dated and numbered.
+
+\chapter{Research Paper}
+% Required if nothing has been published.
+
+\end{document}

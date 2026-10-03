@@ -11,8 +11,8 @@
 
 ## Study title
 
-A Comparative Evaluation and Intelligent Recommendation System for Mobile Health Applications in
-Chronic Disease Self-Management
+A Comparative Evaluation of Mobile Health Applications for Chronic Disease Self-Management:
+A Web-Based User Study
 
 **Researcher:** _[your name]_, MSc Software Engineering (Project Paper 122026-RJD),
 Asia Pacific University

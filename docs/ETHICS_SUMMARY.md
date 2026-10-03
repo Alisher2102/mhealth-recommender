@@ -5,7 +5,7 @@ briefing: research summary → completed form → supervisor and second-marker s
 
 | | |
 |---|---|
-| **Working title** | A Comparative Evaluation and Intelligent Recommendation System for Mobile Health Applications in Chronic Disease Self-Management |
+| **Title** | A Comparative Evaluation of Mobile Health Applications for Chronic Disease Self-Management: A Web-Based User Study |
 | **Programme** | MSc Software Engineering — Project Paper (122026-RJD) |
 | **Researcher** | _[your name / student ID]_ |
 | **Supervisor** | _[supervisor name]_ |
@@ -241,6 +241,11 @@ optional anonymous indicator.
 
 **Before submitting**
 
+- [ ] ⚠️ **If the ethics application was already submitted under the previous title**
+      ("A Comparative Evaluation and Intelligent Recommendation System…"), notify the supervisor so
+      the approval record matches the thesis. The title changed on 2 Oct 2026, before any participant
+      was recruited, so no consent record is affected — but the approved paperwork must name the same
+      study as the submission.
 - [ ] Replace every `_[bracketed placeholder]_` in all three documents
 - [ ] Confirm the required **data-retention period** with the supervisor
 - [ ] Confirm the **APU liability / insurance** position — the form asks you to declare awareness of

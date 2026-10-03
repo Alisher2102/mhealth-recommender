@@ -1,6 +1,10 @@
 # Project Brief
 
-> **A Comparative Evaluation and Intelligent Recommendation System for Mobile Health Applications in Chronic Disease Self-Management**
+> **A Comparative Evaluation of Mobile Health Applications for Chronic Disease
+> Self-Management: A Web-Based User Study**
+>
+> _15 words, within the handbook's limit, and avoids the prohibited
+> "An investigation of…" / "Analysis of…" openers._
 
 _Master's dissertation project (MSc Software Engineering), module **Project Paper (122026-RJD)**.
 This document is the single source of truth for scope, objectives, and technical direction._
@@ -35,6 +39,12 @@ recommendations for a given chronic condition.
 ---
 
 ## 2. Aim & Objectives
+
+> ⚠️ **The aim below predates the current title and no longer matches it.** The title now leads with
+> *comparative evaluation* and a *web-based user study*, framing the research as the contribution and
+> the platform as the instrument. The aim still leads with building a recommendation system. An
+> examiner will notice the inconsistency. Realign the aim — or accept that the title underplays
+> Objectives 4 and 5 — before Chapter 1 is written.
 
 **Aim:** Design, develop, and evaluate an intelligent web-based recommendation system that
 comparatively assesses mHealth applications for chronic disease self-management using a

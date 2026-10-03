@@ -1,7 +1,7 @@
 # mHealth Recommender
 
-**A Comparative Evaluation and Intelligent Recommendation System for Mobile Health
-Applications in Chronic Disease Self-Management.**
+**A Comparative Evaluation of Mobile Health Applications for Chronic Disease
+Self-Management: A Web-Based User Study**
 
 An MSc Software Engineering dissertation project: a web platform that evaluates mHealth apps
 using expert quality scores (MARS) and real user feedback (SUS), then uses a weighted

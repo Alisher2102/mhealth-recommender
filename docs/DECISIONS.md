@@ -578,6 +578,6 @@ substantive, not procedural._
 - **Missing-data eligibility rule** for ranking (ADR-017).
 - Weight justification for the recommendation algorithm (0.6 MARS / 0.4 SUS) — needs literature
   backing + a sensitivity analysis.
-- **Sample-size adequacy** — is 30–50 participants spread across 3 conditions and 18 apps defensible
+- **Sample-size adequacy** — is 30–50 participants spread across 3 conditions and 14 apps defensible
   for the C6 validation, or should scope narrow to one condition / fewer apps?
 - Final title wording (handbook: ≤15 words, avoid "An investigation of…"/"Analysis of…" openers).

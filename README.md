@@ -22,7 +22,7 @@ authorised.** No survey data may be collected until Phase 9 completes.
 
 | Phase | Task | Coding? | Status |
 |:-----:|------|:-------:|--------|
-| 1 | Select & shortlist 15–20 mHealth apps (18 seeded) | No | 🟡 Provisional (no inclusion evidence yet) |
+| 1 | Select & shortlist mHealth apps (**14 final**) | No | 🟡 Selection search still undocumented |
 | 2 | Score each app with MARS | No | ⬜ Not started |
 | 3 | Design architecture & DB schema | Light | 🟢 Designed |
 | 4 | Admin module (auth + MARS entry) | Yes | 🟡 Implemented; MARS entry not yet exercised |
@@ -64,7 +64,7 @@ Recorded in [`PROJECT.md`](./PROJECT.md) §6c:
 - ⛔ **Ethics approval** — no recruitment before it is granted (ADR-013)
 - **Align the consent and debrief wording** in `web/src/content/consent.ts` and `DonePage.tsx` with the approved application — both are currently marked DRAFT
 - **Wipe `dev.db` and re-seed** — it currently holds manual test responses (ADR-018)
-- **Populate `storeUrl`, version and date checked** for all 18 apps — participants cannot try an app the survey never locates
+- **Write `description` and `keyFeatures`** for all 14 apps — currently empty, and participants read them on the survey screen
 - **Settle the missing-data eligibility rule** — apps with no MARS or SUS data are currently still ranked, scored as 0 (ADR-017)
 - **Decide how declined apps are reported** — sessions with fewer than two rated apps yield no ranking and must be excluded from the Spearman comparison; the decline rate per app is itself a finding (ADR-025)
 - **Fill in `web/.env.example`** — committed empty; should declare `VITE_API_BASE_URL`

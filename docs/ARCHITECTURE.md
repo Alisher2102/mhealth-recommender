@@ -59,7 +59,8 @@ persists to a relational database via Prisma.
 Three route areas:
 
 - **Public (`/`)** — project explanation, condition picker, and the recommendation results page
-  (`/recommendations?condition=...`). Shows ranked apps + personalised top pick + weight controls.
+  (`/recommendations?condition=...`). Shows ranked apps and a top pick where the data supports one.
+  _Built. Weight controls are not implemented (defect M1)._
 - **Survey (`/survey`)** — consent gate → condition select → per-app SUS forms (3–5 apps, order
   randomised) → optional preference ranking → thank-you. Each SUS response is POSTed as soon as
   the participant completes that app (no "submit everything at the end") to protect against

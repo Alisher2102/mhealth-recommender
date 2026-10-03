@@ -33,37 +33,51 @@ on which tools are genuinely effective.
 
 This project addresses that gap by building a **web-based platform** that (1) captures expert
 quality assessments of mHealth apps, (2) collects real user-perceived usability data, and
-(3) applies a **weighted multi-criteria algorithm** to produce evidence-based, personalised app
-recommendations for a given chronic condition.
+(3) applies a **weighted multi-criteria algorithm** to produce evidence-based, condition-matched
+application rankings.
 
 ---
 
 ## 2. Aim & Objectives
 
-> ⚠️ **The aim below predates the current title and no longer matches it.** The title now leads with
-> *comparative evaluation* and a *web-based user study*, framing the research as the contribution and
-> the platform as the instrument. The aim still leads with building a recommendation system. An
-> examiner will notice the inconsistency. Realign the aim — or accept that the title underplays
-> Objectives 4 and 5 — before Chapter 1 is written.
+> _Realigned 2 Oct 2026 to match the current title, which leads with comparative evaluation rather
+> than system construction. Phrase this in your own voice for §1.3 of the thesis; the version here
+> exists so this document stays internally consistent._
 
-**Aim:** Design, develop, and evaluate an intelligent web-based recommendation system that
-comparatively assesses mHealth applications for chronic disease self-management using a
-weighted multi-criteria scoring algorithm.
+**Aim:** To comparatively evaluate mobile health applications for chronic disease self-management by
+combining expert-rated quality with user-perceived usability, and to determine whether a weighted
+combination of the two yields rankings consistent with users' stated preferences. A purpose-built web
+platform serves as the instrument for collecting, combining and reporting these measures.
 
 **Objectives:**
 
-1. Evaluate 15–20 mHealth apps using the **Mobile Application Rating Scale (MARS)** across three
-   disease categories (T2DM, hypertension, COPD/respiratory).
+1. Evaluate **14 mHealth apps** using the **Mobile Application Rating Scale (MARS)** across three
+   condition categories (T2DM, hypertension, COPD/respiratory).
 2. Collect user-perception data from 30–50 online participants using the **System Usability
    Scale (SUS)** via the web platform.
-3. Design a **weighted scoring algorithm** combining MARS and SUS scores with condition-specific
-   weighting.
-4. Implement a **personalised recommendation engine** that matches users to the most suitable
-   app based on their condition and preferences.
-5. **Validate** the recommendation output by comparing system-generated rankings against
-   participant preferences (e.g. Spearman rank correlation).
+3. Design a **weighted scoring algorithm** combining MARS and SUS scores on a common normalised
+   scale.
+4. Implement a **condition-matched ranking engine** that returns a ranked set of applications for a
+   selected condition, reporting the confidence of each result.
+5. **Validate** the ranking output by comparing system-generated rankings against participant
+   preference orderings (Spearman rank correlation).
 6. **Assess the entrepreneurial value and commercialisation prospects** of the platform
    (market need, target segment, cost/benefit, adoption barriers, sustainability model).
+
+> **Two corrections made alongside the realignment, both of which were overclaims:**
+>
+> - Objective 1 previously read "15–20 apps". **Fourteen** were evaluated, after two were excluded as
+>   unassessable (`MARS_SCORING_PROTOCOL.md` §7). An objective that overstates the sample is the
+>   first thing an examiner checks against the results.
+> - Objective 4 previously promised a "**personalised** recommendation engine… based on their
+>   condition and preferences". The engine filters by condition and ranks by weighted score; it does
+>   not tailor output to an individual. "Personalised" implies per-user modelling the system does not
+>   perform. Reworded to "condition-matched ranking engine", which is what exists — and the mention
+>   of reported confidence reflects the low-confidence flagging in ADR-026.
+>
+> Objective 3 also dropped "condition-specific weighting": weights are global
+> (`AlgorithmConfig`), not per condition. `conditionMatchBoost` exists in the schema but is never
+> read (§6e, M3).
    _Added 24 Sep 2026 to satisfy CLO2 and marking criterion C7 — see §2a._
 
 ### 2a. Assessment criteria (confirmed — briefing 18 Sep 2026)
@@ -120,8 +134,9 @@ optionally rank preferred apps. Responses persisted per app.
 
 **Component 3 — Recommendation Engine** _(the novel contribution)_
 A weighted, configurable multi-criteria algorithm that normalises MARS and SUS to a common
-scale, applies condition-specific weights, and produces a ranked list plus a personalised top
-recommendation. Includes weight provenance and a sensitivity-analysis view.
+scale, applies configurable global weights, and produces a ranked list plus a top recommendation
+where the data supports one (ADR-026). Weight provenance is recorded; a sensitivity-analysis view is
+proposed but not built.
 
 ---
 
@@ -156,7 +171,7 @@ exists and compiles; it does **not** imply it has been tested.
 
 | Phase | Task | Coding? | Status (24 Sep 2026, end of day) |
 |-------|------|---------|----------------------------------|
-| 1 | Select & shortlist 15–20 mHealth apps (18 seeded) | No | 🟡 Provisional — inclusion criteria, **store URLs**, version and availability evidence still missing (see §6c) |
+| 1 | Select & shortlist mHealth apps (**14 final**, 2 excluded) | No | 🟡 Store URLs, versions and availability now recorded; the **selection search itself is still undocumented** (`MARS_SCORING_PROTOCOL.md` §7) |
 | 2 | Score each app with MARS | No | 🔴 **Not started — now the top technical blocker** (see §6c.3); evaluator protocol undefined (§9.3) |
 | 3 | Design architecture & DB schema | Light | 🟢 Designed — some documented components not built |
 | 4 | Admin module (auth + MARS entry) | Yes | 🟡 Implemented; auth verified manually, MARS entry not yet exercised |

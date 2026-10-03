@@ -381,7 +381,7 @@ model AlgorithmConfig {
 
 ## 6. Seed & Migration Notes
 
-- **Seed** the 18 apps (from Phase 1) and one `AlgorithmConfig` named `default` on first run.
+- **Seed** the 14 evaluated apps and one `AlgorithmConfig` named `default` on first run.
 - **Seed** one admin account from env vars (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) — never commit
   credentials.
 - Use `prisma migrate dev` locally (SQLite) and `prisma migrate deploy` in prod (Postgres).
